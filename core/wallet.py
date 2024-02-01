@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Protocol
 from uuid import UUID
 
-from src import transaction
+from core import transaction
 
 
 @dataclass

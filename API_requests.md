@@ -35,7 +35,7 @@ HTTP 409
 ```json
 {
   "error": {
-    "message": "User with name<username> already exists."
+    "message": "User already exists."
   }
 }
 ```
