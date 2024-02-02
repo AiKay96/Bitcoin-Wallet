@@ -16,3 +16,9 @@ class UserInMemory:
 
         self.users[user.API_key] = user
         return user
+
+    def get(self, key: UUID) -> User:
+        user = self.users.get(key)
+        if user is None:
+            raise KeyError(f"User with key {key} does not exist.")
+        return user

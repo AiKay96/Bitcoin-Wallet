@@ -18,7 +18,8 @@ class Wallet:
 
 
 class WalletRepository(Protocol):
-    pass
+    def create(self, wallet: Wallet) -> Wallet:
+        pass
 
 
 @dataclass
