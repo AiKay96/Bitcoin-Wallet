@@ -46,5 +46,5 @@ def test_should_not_create_same(client: TestClient) -> None:
 
     response = client.post("/users", json=user)
 
-    # assert response.status_code == 409
-    # assert response.json() == {"User already exists."}
+    assert response.status_code == 409
+    assert response.json() == {'message': 'User already exists.'}
