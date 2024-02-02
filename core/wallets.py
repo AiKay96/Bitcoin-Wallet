@@ -21,6 +21,9 @@ class WalletRepository(Protocol):
     def create(self, wallet: Wallet) -> Wallet:
         pass
 
+    def get(self, key: UUID) -> Wallet:
+        pass
+
 
 @dataclass
 class WalletService:
