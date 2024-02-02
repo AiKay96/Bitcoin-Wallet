@@ -24,6 +24,7 @@ class UserRepository(Protocol):
     def get(self, key: UUID) -> User:
         pass
 
+
 @dataclass
 class UserService:
     users: UserRepository

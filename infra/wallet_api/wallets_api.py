@@ -1,12 +1,12 @@
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
 from pydantic import BaseModel
 from starlette.responses import JSONResponse
 
 from core.errors import DoesNotExistError, CapacityError
 from core.wallets import Wallet
-from infra.wallet_api.dependables import WalletRepositoryDependable
+from infra.wallet_api.dependables import WalletRepositoryDependable, UserRepositoryDependable
 
 wallet_api = APIRouter(tags=["Wallets"])
 
@@ -39,11 +39,14 @@ class WalletItemEnvelope(BaseModel):
     response_model=WalletItemEnvelope,
 )
 def create_wallet(
-        request: CreateWalletRequest, wallets: WalletRepositoryDependable
+        request: CreateWalletRequest,
+        wallets: WalletRepositoryDependable,
+        users: UserRepositoryDependable,
 ) -> dict[str, dict] | JSONResponse:
     try:
         wallet = Wallet(**request.model_dump())
-        wallets.create(wallet)
+        user = users.get(request.API_key)
+        wallets.create(wallet, user)
 
         response_data = extract_wallet_fields(wallet)
 
@@ -57,4 +60,27 @@ def create_wallet(
         return JSONResponse(
             status_code=403,
             content={"message": f"User has reached the maximum capacity of wallets."},
+        )
+
+
+@wallet_api.get(
+    "/wallets/{wallet_id}",
+    status_code=200,
+    response_model=WalletItemEnvelope,
+)
+def show_wallet(
+        wallet_id: UUID,
+        wallets: WalletRepositoryDependable,
+        users: UserRepositoryDependable,
+        API_key: UUID = Header(alias="API_key")
+) -> dict[str, dict] | JSONResponse:
+    try:
+        users.get(API_key)
+        wallet = wallets.get(wallet_id)
+        response_data = extract_wallet_fields(wallet)
+        return {"wallet": response_data}
+    except DoesNotExistError:
+        return JSONResponse(
+            status_code=404,
+            content={"message": f"Wallet does not exist."},
         )

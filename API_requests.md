@@ -126,24 +126,13 @@ HTTP 200
 }  
 ```
 
-Fail User:
+Fail:
 
 HTTP 404
 ```json
 {
   "error": {
-    "message": "User with API_key<API_key> does not exist."
-  }
-}
-```
-
-Fail Wallet:
-
-HTTP 404
-```json
-{
-  "error": {
-    "message": "Wallet with address<address> does not exist."
+    "message": "Wallet does not exist."
   }
 }
 ```
