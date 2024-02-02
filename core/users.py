@@ -2,7 +2,8 @@ from dataclasses import dataclass, field
 from typing import Protocol
 from uuid import UUID, uuid4
 
-from core import wallet, transaction
+from core.transaction import Transaction
+from core.wallets import Wallet
 
 
 @dataclass
@@ -11,9 +12,9 @@ class User:
     password: str
 
     API_key: UUID = field(default_factory=uuid4)
-    wallets: list[wallet] = field(default_factory=list)
+    wallets: list[Wallet] = field(default_factory=list)
     wallets_number: int = 0
-    transactions: list[transaction] = field(default_factory=list)
+    transactions: list[Transaction] = field(default_factory=list)
 
 
 class UserRepository(Protocol):

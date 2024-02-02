@@ -4,3 +4,7 @@ class ExistsError(Exception):
 
 class DoesNotExistError(Exception):
     pass
+
+
+class CapacityError(Exception):
+    pass

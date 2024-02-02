@@ -4,7 +4,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from starlette.responses import JSONResponse
 
-from core.errors import DoesNotExistError, ExistsError
+from core.errors import ExistsError
 from core.users import User
 from infra.wallet_api.dependables import UserRepositoryDependable
 

@@ -68,8 +68,8 @@ HTTP 201
 {
   "wallet": {
     "address": "27b4f218-1cc2-4694-b131-ad481dc08902",
-    "balance in BTC": "1 BTC",
-    "balance in USD": "100 USD"
+    "balance_in_BTC": 1,
+    "balance_in_USD": 100
   }
 }
 ```
@@ -80,7 +80,7 @@ HTTP 404
 ```json
 {
   "error": {
-    "message": "User with API_key<API_key> does not exists."
+    "message": "User does not exists."
   }
 }
 ```
