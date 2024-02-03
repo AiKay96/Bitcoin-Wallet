@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from uuid import UUID
 
-from core.errors import ExistsError
+from core.errors import ExistsError, DoesNotExistError
 from core.users import User
 
 
@@ -20,5 +20,5 @@ class UserInMemory:
     def get(self, key: UUID) -> User:
         user = self.users.get(key)
         if user is None:
-            raise KeyError(f"User with key {key} does not exist.")
+            raise DoesNotExistError(f"User with key {key} does not exist.")
         return user
