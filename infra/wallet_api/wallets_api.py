@@ -109,7 +109,7 @@ def show_transaction(
         API_key: UUID = Header(alias="API_key")
 ) -> dict[str, dict] | JSONResponse:
     try:
-        transactions = users.get_wallet(API_key, address).get_transactions()
+        transactions = users.get_wallet(API_key, address).transactions
         return {"transactions": transactions}
     except DoesNotExistError:
         return JSONResponse(
