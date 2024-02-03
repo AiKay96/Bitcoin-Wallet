@@ -4,7 +4,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from starlette.responses import JSONResponse
 
-from core.errors import ExistsError, EqualityError, BalanceError
+from core.errors import EqualityError, BalanceError, DoesNotExistError
 from core.transactions import Transaction
 from infra.wallet_api.dependables import TransactionRepositoryDependable, UserRepositoryDependable, \
     WalletRepositoryDependable
@@ -56,7 +56,7 @@ def create_transaction(
         user_to = users.get(wallets.get(request.wallet_to).API_key)
         transactions.create(transaction, user_from, user_to)
         return {}
-    except DoesNotExistsError:
+    except DoesNotExistError:
         return JSONResponse(
             status_code=404,
             content={"message": f"Wallet does not exist."},

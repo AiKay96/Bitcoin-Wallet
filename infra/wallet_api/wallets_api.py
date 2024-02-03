@@ -70,13 +70,11 @@ def create_wallet(
 )
 def show_wallet(
         wallet_id: UUID,
-        wallets: WalletRepositoryDependable,
         users: UserRepositoryDependable,
         API_key: UUID = Header(alias="API_key")
 ) -> dict[str, dict] | JSONResponse:
     try:
-        users.get(API_key)
-        wallet = wallets.get(wallet_id)
+        wallet = users.get_wallet(API_key, wallet_id)
         response_data = extract_wallet_fields(wallet)
         return {"wallet": response_data}
     except DoesNotExistError:
