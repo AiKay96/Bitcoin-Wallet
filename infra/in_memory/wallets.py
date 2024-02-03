@@ -15,6 +15,7 @@ class WalletInMemory:
         if user.wallets_number == constants.MAXIMUM_NUMBER_OF_WALLETS:
             raise CapacityError
         self.wallets[wallet.address] = wallet
+        user.wallets[wallet.address] = wallet
         user.wallets_number += 1
         return wallet
 

@@ -167,35 +167,23 @@ HTTP 201
 }
 ```
 
-Fail User:
+Fail:
 
 HTTP 404
 ```json
 {
   "error": {
-    "message": "User with API_key<API_key> does not exist."
+    "message": "Wallet does not exist."
   }
 }
 ```
 
-Fail Wallet from:
-
-HTTP 404
+Same Wallet:
+HTTP 400
 ```json
 {
   "error": {
-    "message": "Wallet with address<address> does not exist."
-  }
-}
-```
-
-Fail Wallet to:
-
-HTTP 404
-```json
-{
-  "error": {
-    "message": "Wallet with address<address> does not exist."
+    "message": "Transaction within the same wallet is not allowed."
   }
 }
 ```
@@ -284,27 +272,17 @@ HTTP 200
 }  
 ```
 
-Fail User:
+Fail:
 
 HTTP 404
 ```json
 {
   "error": {
-    "message": "User with API_key<API_key> does not exist."
+    "message": "Wallet does not exist."
   }
 }
 ```
 
-Fail Wallet:
-
-HTTP 404
-```json
-{
-  "error": {
-    "message": "Wallet with address<address> does not exist."
-  }
-}
-```
 
 -------------------------------------------------------------------------------------------------
 > Get statistics

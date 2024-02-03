@@ -4,7 +4,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from starlette.responses import JSONResponse
 
-from core.errors import ExistsError
+from core.errors import ExistsError, EqualityError, BalanceError
 from core.transactions import Transaction
 from infra.wallet_api.dependables import TransactionRepositoryDependable, UserRepositoryDependable, \
     WalletRepositoryDependable
@@ -30,6 +30,11 @@ class CreateTransactionRequest(BaseModel):
 class EmptyItem(BaseModel):
     pass
 
+
+class DoesNotExistsError:
+    pass
+
+
 @transaction_api.post(
     "/transactions",
     status_code=201,
@@ -51,8 +56,18 @@ def create_transaction(
         user_to = users.get(wallets.get(request.wallet_to).API_key)
         transactions.create(transaction, user_from, user_to)
         return {}
-    except ExistsError:
+    except DoesNotExistsError:
         return JSONResponse(
-            status_code=409,
-            content={"message": f"Transaction already exists."},
+            status_code=404,
+            content={"message": f"Wallet does not exist."},
+        )
+    except EqualityError:
+        return JSONResponse(
+            status_code=400,
+            content={"message": f"Transaction within the same wallet is not allowed."},
+        )
+    except BalanceError:
+        return JSONResponse(
+            status_code=400,
+            content={"message": f"Not enough balance to complete the transaction."},
         )
