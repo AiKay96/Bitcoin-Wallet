@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import Protocol
 from uuid import UUID, uuid4
 
-from core.transaction import Transaction
+from core.transactions import Transaction
 from core.wallets import Wallet
 
 

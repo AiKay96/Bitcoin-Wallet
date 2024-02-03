@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import Depends
 from fastapi.requests import Request
 
+from core.transactions import TransactionRepository
 from core.users import UserRepository
 from core.wallets import WalletRepository
 
@@ -22,4 +23,13 @@ def get_wallet_repository(request: Request) -> WalletRepository:
 
 WalletRepositoryDependable = Annotated[
     WalletRepository, Depends(get_wallet_repository)
+]
+
+
+def get_transaction_repository(request: Request) -> TransactionRepository:
+    return request.app.state.transactions  # type: ignore
+
+
+TransactionRepositoryDependable = Annotated[
+    TransactionRepository, Depends(get_transaction_repository)
 ]

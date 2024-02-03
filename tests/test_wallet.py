@@ -32,7 +32,7 @@ class Fake:
             "balance_in_USD": 2
         }
 
-    def unknow_id(self) -> uuid:
+    def unknown_id(self) -> uuid:
         return self.faker.uuid4()
 
 
@@ -48,7 +48,7 @@ def test_should_create(client: TestClient) -> None:
 
 
 def test_should_not_create(client: TestClient) -> None:
-    API_key = Fake().unknow_id()
+    API_key = Fake().unknown_id()
 
     response = client.post("/wallets", json={"API_key": API_key})
     assert response.status_code == 404
@@ -66,8 +66,8 @@ def test_should_not_4_wallet(client: TestClient) -> None:
 
 
 def test_should_not_read_without_user(client: TestClient) -> None:
-    API_key = Fake().unknow_id()
-    address = Fake().unknow_id()
+    API_key = Fake().unknown_id()
+    address = Fake().unknown_id()
     response = client.get(f"/wallets/{address}", headers={"API_key": API_key})
 
     assert response.status_code == 404
@@ -78,7 +78,7 @@ def test_should_not_read_without_address(client: TestClient) -> None:
     user = Fake().user()
     response = client.post("/users", json=user)
     API_key = response.json()["user"]["API_key"]
-    address = Fake().unknow_id()
+    address = Fake().unknown_id()
     response = client.get(f"/wallets/{address}", headers={"API_key": API_key})
 
     assert response.status_code == 404
