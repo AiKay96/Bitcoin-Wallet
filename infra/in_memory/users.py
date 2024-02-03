@@ -26,7 +26,7 @@ class UserInMemory:
 
     def get_wallet(self, key: UUID, address: UUID) -> Wallet:
         user = self.get(key)
-        wallet = user.wallets[address]
+        wallet = user.wallets.get(address)
         if wallet is None:
             raise DoesNotExistError("User does not have this wallet")
         return wallet
