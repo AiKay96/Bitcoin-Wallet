@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
 from pydantic import BaseModel
 from starlette.responses import JSONResponse
 
@@ -10,14 +10,6 @@ from infra.wallet_api.dependables import TransactionRepositoryDependable, UserRe
     WalletRepositoryDependable
 
 transaction_api = APIRouter(tags=["Transactions"])
-
-
-def extract_transaction_fields(transaction: Transaction) -> dict:
-    return {
-        "API_key": transaction.API_key,
-        "transactionname": transaction.transactionname,
-        "password": transaction.password
-    }
 
 
 class CreateTransactionRequest(BaseModel):
@@ -33,6 +25,20 @@ class EmptyItem(BaseModel):
 
 class DoesNotExistsError:
     pass
+
+
+class TransactionItem(BaseModel):
+    wallet_from: UUID
+    wallet_to: UUID
+    amount_in_satoshis: int
+
+
+class TransactionItemEnvelope(BaseModel):
+    unit: TransactionItem
+
+
+class TransactionListEnvelope(BaseModel):
+    units: list[TransactionItem]
 
 
 @transaction_api.post(
@@ -71,3 +77,23 @@ def create_transaction(
             status_code=400,
             content={"message": f"Not enough balance to complete the transaction."},
         )
+
+
+@transaction_api.get(
+    "/transactions",
+    status_code=200,
+    response_model=TransactionListEnvelope,
+)
+def show_transaction(
+        users: UserRepositoryDependable,
+        API_key: UUID = Header(alias="API_key")
+) -> dict[str, dict] | JSONResponse:
+    try:
+        transactions = users.get(API_key).get_transactions()
+        return {"transactions": transactions}
+    except DoesNotExistError:
+        return JSONResponse(
+            status_code=404,
+            content={"message": f"User does not exist."},
+        )
+

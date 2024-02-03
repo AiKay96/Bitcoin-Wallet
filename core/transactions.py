@@ -9,7 +9,7 @@ from uuid import UUID, uuid4
 class Transaction:
     wallet_from: UUID
     wallet_to: UUID
-    amount: float
+    amount_in_satoshis: float
 
 
 class TransactionRepository(Protocol):

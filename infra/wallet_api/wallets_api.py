@@ -33,6 +33,20 @@ class WalletItemEnvelope(BaseModel):
     wallet: WalletItem
 
 
+class TransactionItem(BaseModel):
+    wallet_from: UUID
+    wallet_to: UUID
+    amount_in_satoshis: int
+
+
+class TransactionItemEnvelope(BaseModel):
+    unit: TransactionItem
+
+
+class TransactionListEnvelope(BaseModel):
+    units: list[TransactionItem]
+
+
 @wallet_api.post(
     "/wallets",
     status_code=201,
@@ -77,6 +91,26 @@ def show_wallet(
         wallet = users.get_wallet(API_key, wallet_id)
         response_data = extract_wallet_fields(wallet)
         return {"wallet": response_data}
+    except DoesNotExistError:
+        return JSONResponse(
+            status_code=404,
+            content={"message": f"Wallet does not exist."},
+        )
+
+
+@wallet_api.get(
+    "/wallets/{address}/transactions",
+    status_code=200,
+    response_model=TransactionListEnvelope,
+)
+def show_transaction(
+        address: UUID,
+        users: UserRepositoryDependable,
+        API_key: UUID = Header(alias="API_key")
+) -> dict[str, dict] | JSONResponse:
+    try:
+        transactions = users.get_wallet(API_key, address).get_transactions()
+        return {"transactions": transactions}
     except DoesNotExistError:
         return JSONResponse(
             status_code=404,
