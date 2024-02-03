@@ -14,7 +14,7 @@ wallet_api = APIRouter(tags=["Wallets"])
 def extract_wallet_fields(wallet: Wallet) -> dict:
     return {
         "address": wallet.address,
-        "balance_in_BTC": wallet.balance,
+        "balance_in_BTC": wallet.balance_in_btc(),
         "balance_in_USD": wallet.balance_in_usd()
     }
 

@@ -2,6 +2,7 @@ import os
 
 from fastapi import FastAPI
 
+from infra.in_memory.transactions import TransactionInMemory
 from infra.in_memory.users import UserInMemory
 from infra.wallet_api.transactions_api import transaction_api
 from infra.wallet_api.users_api import user_api
@@ -21,5 +22,6 @@ def init_app():
     else:
         app.state.users = UserInMemory()
         app.state.wallets = WalletInMemory()
+        app.state.transactions = TransactionInMemory()
 
     return app

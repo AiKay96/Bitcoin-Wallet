@@ -152,9 +152,9 @@ Request:
 ```json
 {
     "API_key": "27b4f218-1cc2-4694-b131-ad481dc08901",
-    "wallet from": "27b4f218-1cc2-4694-b131-ad481dc08902",
-    "wallet to": "27b4f218-1cc2-4694-b131-ad481dc08903",
-    "amount in satoshis": 100
+    "wallet_from": "27b4f218-1cc2-4694-b131-ad481dc08902",
+    "wallet_to": "27b4f218-1cc2-4694-b131-ad481dc08903",
+    "amount_in_satoshis": 100
 }
 ```
 
