@@ -3,9 +3,10 @@ from typing import Protocol
 from uuid import UUID, uuid4
 
 
+
+
 @dataclass
 class Transaction:
-    id
     wallet_from: UUID
     wallet_to: UUID
     amount: float
