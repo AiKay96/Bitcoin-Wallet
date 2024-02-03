@@ -24,4 +24,3 @@ class WalletInMemory:
         if wallet is None:
             raise DoesNotExistError(f"User with key {key} does not exist.")
         return wallet
-

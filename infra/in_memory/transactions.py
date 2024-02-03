@@ -1,4 +1,3 @@
-import uuid
 from dataclasses import dataclass
 
 from core import constants
@@ -33,5 +32,9 @@ class TransactionInMemory:
         user_from.transactions.append(transaction)
         user_to.transactions.append(transaction)
 
-        return transaction.amount_in_satoshis * constants.COMMISSION if wallet_from.API_key == wallet_to.API_key else 0.0
-
+        commission = (
+            transaction.amount_in_satoshis * constants.COMMISSION
+            if wallet_from.API_key == wallet_to.API_key
+            else 0.0
+        )
+        return commission

@@ -1,8 +1,6 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Protocol
-from uuid import UUID, uuid4
-
-
+from uuid import UUID
 
 
 @dataclass
@@ -19,8 +17,3 @@ class TransactionRepository(Protocol):
 @dataclass
 class TransactionService:
     transactions: TransactionRepository
-
-
-
-
-

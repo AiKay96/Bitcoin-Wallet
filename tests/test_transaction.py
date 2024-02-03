@@ -1,7 +1,6 @@
 import uuid
 from dataclasses import dataclass, field
 from typing import Any
-from unittest.mock import ANY
 
 import pytest
 from faker import Faker
@@ -30,21 +29,21 @@ class Fake:
         return self.faker.uuid4()
 
 
-def create_user(client: TestClient) -> uuid:
+def make_user(client: TestClient) -> uuid:
     user = Fake().user()
     response = client.post("/users", json=user)
     return response.json()["user"]["API_key"]
 
 
-def create_wallet(client: TestClient, API_key: uuid) -> uuid:
+def make_wallet(client: TestClient, API_key: uuid) -> uuid:
     response = client.post("/wallets", json={"API_key": API_key})
     return response.json()["wallet"]["address"]
 
 
 def test_should_create_transaction_same_user(client: TestClient) -> None:
-    API_key = create_user(client)
-    wallet_from = create_wallet(client, API_key)
-    wallet_to = create_wallet(client, API_key)
+    API_key = make_user(client)
+    wallet_from = make_wallet(client, API_key)
+    wallet_to = make_wallet(client, API_key)
     response = client.post("/transactions",
                            json={"API_key": API_key, "wallet_from": wallet_from, "wallet_to": wallet_to,
                                  "amount_in_satoshis": 100})
@@ -52,11 +51,11 @@ def test_should_create_transaction_same_user(client: TestClient) -> None:
     assert response.json() == {}
 
 
-def test_should_create_transaction_different_user(client: TestClient) -> None:
-    API_key1 = create_user(client)
-    wallet_from = create_wallet(client, API_key1)
-    API_key2 = create_user(client)
-    wallet_to = create_wallet(client, API_key2)
+def test_should_create_transaction(client: TestClient) -> None:
+    API_key1 = make_user(client)
+    wallet_from = make_wallet(client, API_key1)
+    API_key2 = make_user(client)
+    wallet_to = make_wallet(client, API_key2)
     response = client.post("/transactions",
                            json={"API_key": API_key1, "wallet_from": wallet_from, "wallet_to": wallet_to,
                                  "amount_in_satoshis": 100})
@@ -77,8 +76,8 @@ def test_should_not_create(client: TestClient) -> None:
 
 
 def test_equal_error(client: TestClient) -> None:
-    API_key = create_user(client)
-    wallet = create_wallet(client, API_key)
+    API_key = make_user(client)
+    wallet = make_wallet(client, API_key)
 
     response = client.post("/transactions",
                            json={"API_key": API_key, "wallet_from": wallet, "wallet_to": wallet,
@@ -88,10 +87,10 @@ def test_equal_error(client: TestClient) -> None:
 
 
 def test_balance_error(client: TestClient) -> None:
-    API_key1 = create_user(client)
-    wallet1 = create_wallet(client, API_key1)
-    API_key2 = create_user(client)
-    wallet2 = create_wallet(client, API_key2)
+    API_key1 = make_user(client)
+    wallet1 = make_wallet(client, API_key1)
+    API_key2 = make_user(client)
+    wallet2 = make_wallet(client, API_key2)
 
     client.post("/transactions",
                 json={"API_key": API_key1, "wallet_from": wallet1, "wallet_to": wallet2,
@@ -105,10 +104,10 @@ def test_balance_error(client: TestClient) -> None:
 
 
 def test_transaction_validity(client: TestClient) -> None:
-    API_key1 = create_user(client)
-    wallet1 = create_wallet(client, API_key1)
-    API_key2 = create_user(client)
-    wallet2 = create_wallet(client, API_key2)
+    API_key1 = make_user(client)
+    wallet1 = make_wallet(client, API_key1)
+    API_key2 = make_user(client)
+    wallet2 = make_wallet(client, API_key2)
 
     response = client.get(f"/wallets/{wallet1}", headers={"API_key": API_key1})
     balance_before1 = response.json()["wallet"]["balance_in_BTC"]
@@ -124,10 +123,10 @@ def test_transaction_validity(client: TestClient) -> None:
 
 
 def test_get_transactions(client: TestClient) -> None:
-    API_key1 = create_user(client)
-    API_key2 = create_user(client)
-    wallet1 = create_wallet(client, API_key1)
-    wallet2 = create_wallet(client, API_key2)
+    API_key1 = make_user(client)
+    API_key2 = make_user(client)
+    wallet1 = make_wallet(client, API_key1)
+    wallet2 = make_wallet(client, API_key2)
 
     client.post("/transactions",
                 json={"API_key": API_key1, "wallet_from": wallet1, "wallet_to": wallet2,
@@ -148,7 +147,7 @@ def test_get_transactions(client: TestClient) -> None:
 
 
 def test_get_transactions_empty(client: TestClient) -> None:
-    API_key = create_user(client)
+    API_key = make_user(client)
     response = client.get("/transactions", headers={"API_key": API_key})
 
     assert response.status_code == 200

@@ -96,4 +96,3 @@ def show_transaction(
             status_code=404,
             content={"message": f"User does not exist."},
         )
-

@@ -1,8 +1,6 @@
-import os
 from dataclasses import dataclass, field
 from typing import Any
 from unittest.mock import ANY
-from uuid import uuid4
 
 import pytest
 from faker import Faker
