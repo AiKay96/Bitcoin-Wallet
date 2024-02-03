@@ -24,6 +24,9 @@ class UserRepository(Protocol):
     def get(self, key: UUID) -> User:
         pass
 
+    def get_wallet(self, key: UUID, address: UUID) -> Wallet:
+        pass
+
 
 @dataclass
 class UserService:

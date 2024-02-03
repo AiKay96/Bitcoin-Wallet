@@ -3,6 +3,7 @@ from uuid import UUID
 
 from core.errors import ExistsError, DoesNotExistError
 from core.users import User
+from core.wallets import Wallet
 
 
 @dataclass
@@ -22,3 +23,10 @@ class UserInMemory:
         if user is None:
             raise DoesNotExistError(f"User with key {key} does not exist.")
         return user
+
+    def get_wallet(self, key: UUID, address: UUID) -> Wallet:
+        user = self.get(key)
+        wallet = user.wallets[address]
+        if wallet is None:
+            raise DoesNotExistError("User does not have this wallet")
+        return wallet
