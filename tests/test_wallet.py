@@ -7,6 +7,7 @@ import pytest
 from faker import Faker
 from fastapi.testclient import TestClient
 
+from core import constants
 from runner.setup import init_app
 
 
@@ -28,8 +29,8 @@ class Fake:
     @staticmethod
     def wallet() -> dict[str, Any]:
         return {
-            "balance_in_BTC": 1,
-            "balance_in_USD": 2
+            "balance_in_BTC": 1 * constants.BTC_TO_SATOSHI,
+            "balance_in_USD": 1 * constants.BTC_TO_USD
         }
 
     def unknown_id(self) -> uuid:
