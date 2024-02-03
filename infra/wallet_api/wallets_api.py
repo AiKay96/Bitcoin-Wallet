@@ -40,11 +40,11 @@ class TransactionItem(BaseModel):
 
 
 class TransactionItemEnvelope(BaseModel):
-    unit: TransactionItem
+    transaction: TransactionItem
 
 
 class TransactionListEnvelope(BaseModel):
-    units: list[TransactionItem]
+    transactions: list[TransactionItem]
 
 
 @wallet_api.post(
