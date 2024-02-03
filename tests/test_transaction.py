@@ -102,3 +102,22 @@ def test_balance_error(client: TestClient) -> None:
 
     assert response.status_code == 400
     assert response.json() == {'message': 'Not enough balance to complete the transaction.'}
+
+
+def test_transaction_validity(client: TestClient) -> None:
+    API_key1 = create_user(client)
+    wallet1 = create_wallet(client, API_key1)
+    API_key2 = create_user(client)
+    wallet2 = create_wallet(client, API_key2)
+
+    response = client.get(f"/wallets/{wallet1}", headers={"API_key": API_key1})
+    balance_before1 = response.json()["wallet"]["balance_in_BTC"]
+
+    response = client.post("/transactions",
+                           json={"API_key": API_key1, "wallet_from": wallet1, "wallet_to": wallet2,
+                                 "amount_in_satoshis": 100})
+
+    response = client.get(f"/wallets/{wallet1}", headers={"API_key": API_key1})
+    balance_after1 = response.json()["wallet"]["balance_in_BTC"]
+
+    assert round((balance_before1 - balance_after1) * constants.BTC_TO_SATOSHI, 8) == 100
