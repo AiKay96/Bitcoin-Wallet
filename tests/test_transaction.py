@@ -93,9 +93,9 @@ def test_balance_error(client: TestClient) -> None:
     API_key2 = create_user(client)
     wallet2 = create_wallet(client, API_key2)
 
-    response = client.post("/transactions",
-                           json={"API_key": API_key1, "wallet_from": wallet1, "wallet_to": wallet2,
-                                 "amount_in_satoshis": 100000000})
+    client.post("/transactions",
+                json={"API_key": API_key1, "wallet_from": wallet1, "wallet_to": wallet2,
+                      "amount_in_satoshis": 100000000})
     response = client.post("/transactions",
                            json={"API_key": API_key1, "wallet_from": wallet1, "wallet_to": wallet2,
                                  "amount_in_satoshis": 100000000})
@@ -113,11 +113,51 @@ def test_transaction_validity(client: TestClient) -> None:
     response = client.get(f"/wallets/{wallet1}", headers={"API_key": API_key1})
     balance_before1 = response.json()["wallet"]["balance_in_BTC"]
 
-    response = client.post("/transactions",
-                           json={"API_key": API_key1, "wallet_from": wallet1, "wallet_to": wallet2,
-                                 "amount_in_satoshis": 100})
+    client.post("/transactions",
+                json={"API_key": API_key1, "wallet_from": wallet1, "wallet_to": wallet2,
+                      "amount_in_satoshis": 100})
 
     response = client.get(f"/wallets/{wallet1}", headers={"API_key": API_key1})
     balance_after1 = response.json()["wallet"]["balance_in_BTC"]
 
     assert round((balance_before1 - balance_after1) * constants.BTC_TO_SATOSHI, 8) == 100
+
+
+def test_get_transactions(client: TestClient) -> None:
+    API_key1 = create_user(client)
+    API_key2 = create_user(client)
+    wallet1 = create_wallet(client, API_key1)
+    wallet2 = create_wallet(client, API_key2)
+
+    client.post("/transactions",
+                json={"API_key": API_key1, "wallet_from": wallet1, "wallet_to": wallet2,
+                      "amount_in_satoshis": 100})
+
+    client.post("/transactions",
+                json={"API_key": API_key2, "wallet_from": wallet2, "wallet_to": wallet1,
+                      "amount_in_satoshis": 100})
+
+    response = client.get("/transactions", headers={"API_key": API_key1})
+
+    assert response.status_code == 200
+    assert len(response.json()["transactions"]) == 2
+
+    response = client.get("/transactions", headers={"API_key": API_key2})
+    assert response.status_code == 200
+    assert len(response.json()["transactions"]) == 2
+
+
+def test_get_transactions_empty(client: TestClient) -> None:
+    API_key = create_user(client)
+    response = client.get("/transactions", headers={"API_key": API_key})
+
+    assert response.status_code == 200
+    assert len(response.json()["transactions"]) == 0
+
+
+def test_should_not_get_transactions(client: TestClient) -> None:
+    API_key = Fake().unknown_id()
+    response = client.get("/transactions", headers={"API_key": API_key})
+
+    assert response.status_code == 404
+    assert response.json() == {'message': 'User does not exist.'}
