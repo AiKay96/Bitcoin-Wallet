@@ -8,3 +8,11 @@ class DoesNotExistError(Exception):
 
 class CapacityError(Exception):
     pass
+
+
+class EqualityError(Exception):
+    pass
+
+
+class BalanceError(Exception):
+    pass

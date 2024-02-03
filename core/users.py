@@ -12,7 +12,7 @@ class User:
     password: str
 
     API_key: UUID = field(default_factory=uuid4)
-    wallets: list[Wallet] = field(default_factory=list)
+    wallets: dict[UUID, Wallet] = field(default_factory=dict)
     wallets_number: int = 0
     transactions: list[Transaction] = field(default_factory=list)
 

@@ -29,7 +29,7 @@ class Fake:
     @staticmethod
     def wallet() -> dict[str, Any]:
         return {
-            "balance_in_BTC": 1 * constants.BTC_TO_SATOSHI,
+            "balance_in_BTC": 1,
             "balance_in_USD": 1 * constants.BTC_TO_USD
         }
 
