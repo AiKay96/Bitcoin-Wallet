@@ -69,7 +69,36 @@ def test_should_not_create(client: TestClient) -> None:
     wallet_from = Fake().unknown_id()
     wallet_to = Fake().unknown_id()
 
-    response = client.post("/transactions", json={"API_key": API_key, "wallet_from": wallet_from, "wallet_to": wallet_to,
+    response = client.post("/transactions",
+                           json={"API_key": API_key, "wallet_from": wallet_from, "wallet_to": wallet_to,
                                  "amount_in_satoshis": 100})
     assert response.status_code == 404
     assert response.json() == {'message': 'Wallet does not exist.'}
+
+
+def test_equal_error(client: TestClient) -> None:
+    API_key = create_user(client)
+    wallet = create_wallet(client, API_key)
+
+    response = client.post("/transactions",
+                           json={"API_key": API_key, "wallet_from": wallet, "wallet_to": wallet,
+                                 "amount_in_satoshis": 100})
+    assert response.status_code == 400
+    assert response.json() == {'message': 'Transaction within the same wallet is not allowed.'}
+
+
+def test_balance_error(client: TestClient) -> None:
+    API_key1 = create_user(client)
+    wallet1 = create_wallet(client, API_key1)
+    API_key2 = create_user(client)
+    wallet2 = create_wallet(client, API_key2)
+
+    response = client.post("/transactions",
+                           json={"API_key": API_key1, "wallet_from": wallet1, "wallet_to": wallet2,
+                                 "amount_in_satoshis": 100000000})
+    response = client.post("/transactions",
+                           json={"API_key": API_key1, "wallet_from": wallet1, "wallet_to": wallet2,
+                                 "amount_in_satoshis": 100000000})
+
+    assert response.status_code == 400
+    assert response.json() == {'message': 'Not enough balance to complete the transaction.'}
