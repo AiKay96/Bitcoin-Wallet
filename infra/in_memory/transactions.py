@@ -10,7 +10,8 @@ from core.users import User
 @dataclass
 class TransactionInMemory:
 
-    def create(self, transaction: Transaction, user_from: User, user_to: User) -> float:
+    @staticmethod
+    def create(transaction: Transaction, user_from: User, user_to: User) -> float:
         wallet_from = user_from.wallets[transaction.wallet_from]
         wallet_to = user_to.wallets[transaction.wallet_to]
 

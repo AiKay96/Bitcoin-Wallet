@@ -56,7 +56,7 @@ def create_transaction(
         transaction = Transaction(
             wallet_from=request.wallet_from,
             wallet_to=request.wallet_to,
-            amount=request.amount_in_satoshis,
+            amount_in_satoshis=request.amount_in_satoshis,
         )
         user_from = users.get(request.API_key)
         user_to = users.get(wallets.get(request.wallet_to).API_key)
