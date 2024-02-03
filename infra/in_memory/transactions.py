@@ -1,6 +1,7 @@
 import uuid
 from dataclasses import dataclass
 
+from core import constants
 from core.errors import DoesNotExistError, EqualityError, BalanceError
 from core.transactions import Transaction
 from core.users import User
@@ -9,7 +10,7 @@ from core.users import User
 @dataclass
 class TransactionInMemory:
 
-    def create(self, transaction: Transaction, user_from: User, user_to: User) -> None:
+    def create(self, transaction: Transaction, user_from: User, user_to: User) -> float:
         wallet_from = user_from.wallets[transaction.wallet_from]
         wallet_to = user_to.wallets[transaction.wallet_to]
 
@@ -31,4 +32,5 @@ class TransactionInMemory:
         user_from.transactions.append(transaction)
         user_to.transactions.append(transaction)
 
-        pass
+        return transaction.amount * constants.COMMISSION if wallet_from.API_key == wallet_to.API_key else 0.0
+
