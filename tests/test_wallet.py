@@ -60,7 +60,7 @@ def test_should_not_4_wallet(client: TestClient) -> None:
     user = Fake().user()
     response = client.post("/users", json=user)
     API_key = response.json()["user"]["API_key"]
-    for i in range(4):
+    for i in range(constants.MAXIMUM_NUMBER_OF_WALLETS + 1):
         response = client.post("/wallets", json={"API_key": API_key})
     assert response.status_code == 403
     assert response.json() == {'message': 'User has reached the maximum capacity of wallets.'}
