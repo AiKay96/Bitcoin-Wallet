@@ -1,3 +1,4 @@
+import requests
 from uuid import UUID
 
 from fastapi import APIRouter, Header
@@ -11,11 +12,17 @@ from infra.wallet_api.dependables import WalletRepositoryDependable, UserReposit
 wallet_api = APIRouter(tags=["Wallets"])
 
 
+def usd_rate():
+    response = requests.get('https://blockchain.info/ticker')
+    data = response.json()
+    return data['USD']['last']
+
+
 def extract_wallet_fields(wallet: Wallet) -> dict:
     return {
         "address": wallet.address,
         "balance_in_BTC": wallet.balance_in_btc(),
-        "balance_in_USD": wallet.balance_in_usd()
+        "balance_in_USD": wallet.balance_in_btc() * usd_rate()
     }
 
 

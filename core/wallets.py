@@ -17,9 +17,6 @@ class Wallet:
     def balance_in_btc(self) -> float:
         return self.balance / constants.BTC_TO_SATOSHI
 
-    def balance_in_usd(self) -> float:
-        return self.balance_in_btc() * constants.BTC_TO_USD
-
 
 class WalletRepository(Protocol):
     def create(self, wallet: Wallet) -> Wallet:

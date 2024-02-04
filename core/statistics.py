@@ -2,18 +2,23 @@ from dataclasses import dataclass
 from uuid import UUID
 from typing import Protocol
 
+from core.constants import ADMIN_API_KEY
+
 
 @dataclass
-class Statistics:
-    ADMIN_key: UUID
-    transaction_number: int
-    profit: float
+class Statistic:
+    transaction_number: int = 0
+    profit_in_satoshis: int = 0
 
 
-class StatisticsRepository(Protocol):
-    pass
+class StatisticRepository(Protocol):
+    def get(self, key: UUID) -> Statistic:
+        pass
+
+    def update(self, commission: float) -> None:
+        pass
 
 
 @dataclass
 class StatisticsService:
-    statistics: StatisticsRepository
+    statistics: StatisticRepository

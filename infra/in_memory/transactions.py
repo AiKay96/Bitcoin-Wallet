@@ -10,7 +10,7 @@ from core.users import User
 class TransactionInMemory:
 
     @staticmethod
-    def create(transaction: Transaction, user_from: User, user_to: User) -> float:
+    def create(transaction: Transaction, user_from: User, user_to: User) -> int:
         wallet_from = user_from.wallets[transaction.wallet_from]
         wallet_to = user_to.wallets[transaction.wallet_to]
 
@@ -33,8 +33,8 @@ class TransactionInMemory:
         user_to.transactions.append(transaction)
 
         commission = (
-            transaction.amount_in_satoshis * constants.COMMISSION
+            round(transaction.amount_in_satoshis * constants.COMMISSION)
             if wallet_from.API_key == wallet_to.API_key
-            else 0.0
+            else 0
         )
         return commission

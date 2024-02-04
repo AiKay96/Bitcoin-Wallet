@@ -306,8 +306,8 @@ HTTP 200
 ```json
 {
   "statistics": {
-    "transaction number": 100,
-    "Profit in satoshi": 100
+    "transaction_number": 100,
+    "profit_in_satoshis": 100
     }
 }  
 ```
@@ -318,7 +318,7 @@ HTTP 403
 ```json
 {
   "error": {
-    "message": "User with API_key<API_key> does not have access to statistics."
+    "message": "User does not have access to statistics."
   }
 }
 ```

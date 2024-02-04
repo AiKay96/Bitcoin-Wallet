@@ -2,8 +2,10 @@ import os
 
 from fastapi import FastAPI
 
+from infra.in_memory.statistics import StatisticInMemory
 from infra.in_memory.transactions import TransactionInMemory
 from infra.in_memory.users import UserInMemory
+from infra.wallet_api.statistics_api import statistic_api
 from infra.wallet_api.transactions_api import transaction_api
 from infra.wallet_api.users_api import user_api
 from infra.in_memory.wallets import WalletInMemory
@@ -15,6 +17,7 @@ def init_app():
     app.include_router(user_api)
     app.include_router(wallet_api)
     app.include_router(transaction_api)
+    app.include_router(statistic_api)
 
     # need to change if/else.
     if os.getenv("BOOK_REPOSITORY_KIND", "memory") == "sqlite":
@@ -23,5 +26,6 @@ def init_app():
         app.state.users = UserInMemory()
         app.state.wallets = WalletInMemory()
         app.state.transactions = TransactionInMemory()
+        app.state.statistics = StatisticInMemory()
 
     return app

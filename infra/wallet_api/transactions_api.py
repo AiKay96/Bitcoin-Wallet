@@ -7,7 +7,7 @@ from starlette.responses import JSONResponse
 from core.errors import EqualityError, BalanceError, DoesNotExistError
 from core.transactions import Transaction
 from infra.wallet_api.dependables import TransactionRepositoryDependable, UserRepositoryDependable, \
-    WalletRepositoryDependable
+    WalletRepositoryDependable, StatisticRepositoryDependable
 
 transaction_api = APIRouter(tags=["Transactions"])
 
@@ -50,7 +50,8 @@ def create_transaction(
         request: CreateTransactionRequest,
         transactions: TransactionRepositoryDependable,
         wallets: WalletRepositoryDependable,
-        users: UserRepositoryDependable
+        users: UserRepositoryDependable,
+        statistics: StatisticRepositoryDependable
 ) -> dict[str, dict] | JSONResponse:
     try:
         transaction = Transaction(
@@ -60,7 +61,8 @@ def create_transaction(
         )
         user_from = users.get(request.API_key)
         user_to = users.get(wallets.get(request.wallet_to).API_key)
-        transactions.create(transaction, user_from, user_to)
+        commission = transactions.create(transaction, user_from, user_to)
+        statistics.update(commission)
         return {}
     except DoesNotExistError:
         return JSONResponse(

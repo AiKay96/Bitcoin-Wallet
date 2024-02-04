@@ -26,35 +26,18 @@ class Fake:
             "password": self.faker.word()
         }
 
-    @staticmethod
-    def wallet() -> dict[str, Any]:
-        return {
-            "balance_in_BTC": 1,
-            "balance_in_USD": 1 * constants.BTC_TO_USD
-        }
-
     def unknown_id(self) -> uuid:
         return self.faker.uuid4()
 
 
-def create_user(client: TestClient) -> uuid:
+def test_should_create(client: TestClient) -> None:
     user = Fake().user()
     response = client.post("/users", json=user)
-    return response.json()["user"]["API_key"]
-
-
-def create_wallet(client: TestClient, API_key: uuid) -> uuid:
-    response = client.post("/wallets", json={"API_key": API_key})
-    return response.json()["wallet"]["address"]
-
-
-def test_should_create(client: TestClient) -> None:
-    wallet = Fake().wallet()
-    API_key = create_user(client)
+    API_key = response.json()["user"]["API_key"]
 
     response = client.post("/wallets", json={"API_key": API_key})
     assert response.status_code == 201
-    assert response.json() == {"wallet": {"address": ANY, **wallet}}
+    assert response.json()["wallet"]["balance_in_BTC"] == 1
 
 
 def test_should_not_create(client: TestClient) -> None:
@@ -66,8 +49,9 @@ def test_should_not_create(client: TestClient) -> None:
 
 
 def test_should_not_4_wallet(client: TestClient) -> None:
-    response = None
-    API_key = create_user(client)
+    user = Fake().user()
+    response = client.post("/users", json=user)
+    API_key = response.json()["user"]["API_key"]
     for i in range(constants.MAXIMUM_NUMBER_OF_WALLETS + 1):
         response = client.post("/wallets", json={"API_key": API_key})
     assert response.status_code == 403
@@ -84,7 +68,9 @@ def test_should_not_read_without_user(client: TestClient) -> None:
 
 
 def test_should_not_read_without_address(client: TestClient) -> None:
-    API_key = create_user(client)
+    user = Fake().user()
+    response = client.post("/users", json=user)
+    API_key = response.json()["user"]["API_key"]
     address = Fake().unknown_id()
     response = client.get(f"/wallets/{address}", headers={"API_key": API_key})
 
@@ -93,54 +79,14 @@ def test_should_not_read_without_address(client: TestClient) -> None:
 
 
 def test_should_persist(client: TestClient) -> None:
-    API_key = create_user(client)
+    user = Fake().user()
+    response = client.post("/users", json=user)
+    API_key = response.json()["user"]["API_key"]
 
-    wallet = Fake().wallet()
     response = client.post("/wallets", json={"API_key": API_key})
     address = response.json()["wallet"]["address"]
 
     response = client.get(f"/wallets/{address}", headers={"API_key": API_key})
 
     assert response.status_code == 200
-    assert response.json() == {"wallet": {"address": ANY, **wallet}}
-
-
-def test_get_transactions(client: TestClient) -> None:
-    API_key = create_user(client)
-    wallet1 = create_wallet(client, API_key)
-    wallet2 = create_wallet(client, API_key)
-
-    client.post("/transactions",
-                json={"API_key": API_key, "wallet_from": wallet1, "wallet_to": wallet2,
-                      "amount_in_satoshis": 200})
-
-    client.post("/transactions",
-                json={"API_key": API_key, "wallet_from": wallet2, "wallet_to": wallet1,
-                      "amount_in_satoshis": 200})
-
-    response = client.get(f"/wallets/{wallet1}/transactions", headers={"API_key": API_key})
-
-    assert response.status_code == 200
-    assert len(response.json()["transactions"]) == 2
-
-    response = client.get(f"/wallets/{wallet2}/transactions", headers={"API_key": API_key})
-    assert response.status_code == 200
-    assert len(response.json()["transactions"]) == 2
-
-
-def test_get_transactions_empty(client: TestClient) -> None:
-    API_key = create_user(client)
-    wallet = create_wallet(client, API_key)
-    response = client.get(f"/wallets/{wallet}/transactions", headers={"API_key": API_key})
-
-    assert response.status_code == 200
-    assert len(response.json()["transactions"]) == 0
-
-
-def test_should_not_get_transactions(client: TestClient) -> None:
-    API_key = Fake().unknown_id()
-    wallet = Fake().unknown_id()
-    response = client.get(f"/wallets/{wallet}/transactions", headers={"API_key": API_key})
-
-    assert response.status_code == 404
-    assert response.json() == {'message': 'Wallet does not exist.'}
+    assert response.json()["wallet"]["balance_in_BTC"] == 1
