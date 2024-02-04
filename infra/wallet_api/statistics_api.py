@@ -13,11 +13,11 @@ statistic_api = APIRouter(tags=["Statistics"])
 
 class StatisticItem(BaseModel):
     transaction_number: int
-    profit_in_satoshis: float
+    profit_in_satoshis: int
 
 
 class StatisticItemEnvelope(BaseModel):
-    statistic: StatisticItem
+    statistics: StatisticItem
 
 
 @statistic_api.get(

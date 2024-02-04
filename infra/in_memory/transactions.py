@@ -24,7 +24,7 @@ class TransactionInMemory:
             raise BalanceError("Not enough money.")
 
         wallet_from.balance -= transaction.amount_in_satoshis
-        wallet_to.balance += transaction.amount_in_satoshis
+        wallet_to.balance += transaction.amount_in_satoshis * (1-constants.COMMISSION)
 
         wallet_from.transactions.append(transaction)
         wallet_to.transactions.append(transaction)
@@ -34,7 +34,7 @@ class TransactionInMemory:
 
         commission = (
             round(transaction.amount_in_satoshis * constants.COMMISSION)
-            if wallet_from.API_key == wallet_to.API_key
+            if wallet_from.API_key != wallet_to.API_key
             else 0
         )
         return commission
