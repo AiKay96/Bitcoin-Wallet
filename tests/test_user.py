@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass, field
 from typing import Any
 from unittest.mock import ANY
@@ -6,6 +7,7 @@ import pytest
 from faker import Faker
 from fastapi.testclient import TestClient
 
+from infra.in_database.user_sqlite import UserInDatabase
 from runner.setup import init_app
 
 
@@ -25,7 +27,13 @@ class Fake:
         }
 
 
+def clear_tables() -> None:
+    if os.getenv("REPOSITORY_KIND", "memory") == "sqlite":
+        UserInDatabase().clear_tables()
+
+
 def test_should_create(client: TestClient) -> None:
+    clear_tables()
     user = Fake().user()
 
     response = client.post("/users", json=user)
@@ -35,6 +43,7 @@ def test_should_create(client: TestClient) -> None:
 
 
 def test_should_not_create_same(client: TestClient) -> None:
+    clear_tables()
     user = Fake().user()
 
     response = client.post("/users", json=user)
