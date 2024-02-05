@@ -11,10 +11,7 @@ class Transaction:
     transaction_id: UUID = field(default_factory=uuid4)
 
     def __eq__(self, other) -> bool:
-        return (self.wallet_from == other.wallet_from
-                and self.wallet_to == other.wallet_to
-                and self.amount_in_satoshis == other.amount_in_satoshis
-                and self.transaction_id == other.transaction_id)
+        return self.transaction_id == other.transaction_id
 
 
 class TransactionRepository(Protocol):

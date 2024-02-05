@@ -23,7 +23,7 @@ def init_app():
     app.include_router(transaction_api)
     app.include_router(statistic_api)
 
-    #os.environ["REPOSITORY_KIND"] = "sqlite"
+    os.environ["REPOSITORY_KIND"] = "sqlite"
 
     # need to change if/else.
     if os.getenv("REPOSITORY_KIND", "memory") == "sqlite":

@@ -76,25 +76,6 @@ class WalletInDatabase:
 
         return wallet
 
-    def get_user_wallets(self, API_key: UUID) -> list[Wallet]:
-        with sqlite3.connect(self.db_path) as connection:
-            cursor = connection.cursor()
-            cursor.execute(
-                """
-                SELECT API_key, balance, address
-                FROM wallets
-                WHERE API_key = ?
-                """,
-                (str(API_key),)
-            )
-            results = cursor.fetchall()
-
-        wallets = []
-        for result in results:
-            wallet = Wallet(API_key=result[0], balance=result[1], address=result[2])
-            wallets.append(wallet)
-
-        return wallets
 
     def change_balance(self, address: UUID, new_balance: int) -> None:
         with sqlite3.connect(self.db_path) as connection:

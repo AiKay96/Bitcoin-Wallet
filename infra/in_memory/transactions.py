@@ -25,12 +25,15 @@ class TransactionInMemory:
 
         wallet_from.balance -= transaction.amount_in_satoshis
         wallet_to.balance += transaction.amount_in_satoshis * (1-constants.COMMISSION)
+        if transaction not in wallet_from.transactions:
+            wallet_from.transactions.append(transaction)
+        if transaction not in wallet_to.transactions:
+            wallet_to.transactions.append(transaction)
 
-        wallet_from.transactions.append(transaction)
-        wallet_to.transactions.append(transaction)
-
-        user_from.transactions.append(transaction)
-        user_to.transactions.append(transaction)
+        if transaction not in user_from.transactions:
+            user_from.transactions.append(transaction)
+        if transaction not in user_to.transactions:
+            user_to.transactions.append(transaction)
 
         commission = (
             round(transaction.amount_in_satoshis * constants.COMMISSION)

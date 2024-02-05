@@ -18,6 +18,7 @@ class TransactionInDatabase:
     def create_table(self) -> None:
         create_table_query = """
             CREATE TABLE IF NOT EXISTS wallet_transactions (
+                transaction_id TEXT NOT NULL,
                 wallet_from TEXT NOT NULL,
                 wallet_to TEXT NOT NULL,
                 amount_in_satoshis INT NOT NULL
@@ -58,10 +59,11 @@ class TransactionInDatabase:
             cursor = connection.cursor()
             cursor.execute(
                 """
-                INSERT INTO wallet_transactions (wallet_from, wallet_to, amount_in_satoshis)
-                VALUES (?, ?, ?);
+                INSERT INTO wallet_transactions (transaction_id,wallet_from, wallet_to, amount_in_satoshis)
+                VALUES (?, ?, ?,?);
                 """,
-                (str(transaction.wallet_from), str(transaction.wallet_to), transaction.amount_in_satoshis)
+                (str(transaction.transaction_id), str(transaction.wallet_from), str(transaction.wallet_to),
+                 transaction.amount_in_satoshis)
             )
             connection.commit()
 
@@ -79,7 +81,7 @@ class TransactionInDatabase:
             cursor = connection.cursor()
             cursor.execute(
                 """
-                SELECT wallet_from, wallet_to, amount_in_satoshis
+                SELECT transaction_id,wallet_from, wallet_to, amount_in_satoshis
                 FROM wallet_transactions
                 WHERE wallet_from = ? OR wallet_to = ?;
                 """,
@@ -90,10 +92,12 @@ class TransactionInDatabase:
 
             for result in results:
                 transaction = Transaction(
-                    wallet_from=result[0],
-                    wallet_to=result[1],
-                    amount_in_satoshis=result[2]
+                    transaction_id=result[0],
+                    wallet_from=result[1],
+                    wallet_to=result[2],
+                    amount_in_satoshis=result[3]
                 )
                 transactions.append(transaction)
 
         return transactions
+

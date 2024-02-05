@@ -166,6 +166,26 @@ def test_get_transactions(client: TestClient) -> None:
     assert len(response.json()["transactions"]) == 2
 
 
+def test_get_transactions_same_user(client: TestClient) -> None:
+    clear_tables()
+    API_key = make_user(client)
+    wallet1 = make_wallet(client, API_key)
+    wallet2 = make_wallet(client, API_key)
+
+    client.post("/transactions",
+                json={"API_key": API_key, "wallet_from": wallet1, "wallet_to": wallet2,
+                      "amount_in_satoshis": 100})
+
+    client.post("/transactions",
+                json={"API_key": API_key, "wallet_from": wallet2, "wallet_to": wallet1,
+                      "amount_in_satoshis": 200})
+
+    response = client.get("/transactions", headers={"API_key": API_key})
+
+    assert response.status_code == 200
+    assert len(response.json()["transactions"]) == 2
+
+
 def test_get_transactions_empty(client: TestClient) -> None:
     clear_tables()
     API_key = make_user(client)

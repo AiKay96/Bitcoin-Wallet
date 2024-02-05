@@ -12,6 +12,10 @@ from core.wallets import Wallet
 class UserInDatabase:
     db_path: str = "./database.db"
 
+    def __init__(self, db_path: str = "./database.db") -> None:
+        self.db_path = db_path
+        self.create_table()
+
     def create_table(self) -> None:
         create_table_query = """
             CREATE TABLE IF NOT EXISTS users (
@@ -119,22 +123,8 @@ class UserInDatabase:
 
     def get_transactions(self, key: UUID) -> list[Transaction]:
         self.get(key)
-        with sqlite3.connect(self.db_path) as connection:
-            cursor = connection.cursor()
-            cursor.execute(
-                """
-                SELECT API_key, balance, address
-                FROM wallets
-                WHERE API_key = ?
-                """,
-                (str(key),)
-            )
-            results = cursor.fetchall()
 
-        wallets = []
-        for result in results:
-            wallet = Wallet(API_key=result[0], balance=result[1], address=result[2])
-            wallets.append(wallet)
+        wallets = self.get_user_wallets(key)
         answer: list[Transaction] = []
 
         addresses = [""] * 3
@@ -152,13 +142,35 @@ class UserInDatabase:
                 str(addresses[0]), str(addresses[1]), str(addresses[2]), str(addresses[0]), str(addresses[1]),
                 str(addresses[2]),))
             data = cursor.fetchall()
-
+            print(data)
             for result in data:
                 transaction = Transaction(
-                    wallet_from=result[0],
-                    wallet_to=result[1],
-                    amount_in_satoshis=result[2]
+                    transaction_id=result[0],
+                    wallet_from=result[1],
+                    wallet_to=result[2],
+                    amount_in_satoshis=result[3]
                 )
-                answer.append(transaction)
+                if transaction not in answer:
+                    answer.append(transaction)
 
         return answer
+
+    def get_user_wallets(self, API_key: UUID) -> list[Wallet]:
+        with sqlite3.connect(self.db_path) as connection:
+            cursor = connection.cursor()
+            cursor.execute(
+                """
+                SELECT API_key, balance, address
+                FROM wallets
+                WHERE API_key = ?
+                """,
+                (str(API_key),)
+            )
+            results = cursor.fetchall()
+
+        wallets = []
+        for result in results:
+            wallet = Wallet(API_key=result[0], balance=result[1], address=result[2])
+            wallets.append(wallet)
+
+        return wallets
