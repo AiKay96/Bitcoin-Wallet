@@ -8,7 +8,10 @@ from faker import Faker
 from fastapi.testclient import TestClient
 
 from core import constants
+from infra.in_database.statistic_sqlite import StatisticInDatabase
 from infra.in_database.transaction_sqlite import TransactionInDatabase
+from infra.in_database.user_sqlite import UserInDatabase
+from infra.in_database.wallet_sqlite import WalletInDatabase
 from runner.setup import init_app
 
 
@@ -37,14 +40,17 @@ def make_user(client: TestClient) -> uuid:
     return response.json()["user"]["API_key"]
 
 
+def clear_tables() -> None:
+    if os.getenv("REPOSITORY_KIND", "memory") == "sqlite":
+        UserInDatabase().clear_tables()
+        StatisticInDatabase().clear_tables()
+        TransactionInDatabase().clear_tables()
+        WalletInDatabase().clear_tables()
+
+
 def make_wallet(client: TestClient, API_key: uuid) -> uuid:
     response = client.post("/wallets", json={"API_key": API_key})
     return response.json()["wallet"]["address"]
-
-
-def clear_tables() -> None:
-    if os.getenv("REPOSITORY_KIND", "memory") == "sqlite":
-        TransactionInDatabase().clear_table()
 
 
 def test_should_create_transaction_same_user(client: TestClient) -> None:

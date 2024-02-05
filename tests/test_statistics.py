@@ -9,6 +9,9 @@ from fastapi.testclient import TestClient
 
 from core.constants import ADMIN_API_KEY, COMMISSION
 from infra.in_database.statistic_sqlite import StatisticInDatabase
+from infra.in_database.transaction_sqlite import TransactionInDatabase
+from infra.in_database.user_sqlite import UserInDatabase
+from infra.in_database.wallet_sqlite import WalletInDatabase
 from runner.setup import init_app
 
 
@@ -34,6 +37,7 @@ class Fake:
 def make_user(client: TestClient) -> uuid:
     user = Fake().user()
     response = client.post("/users", json=user)
+    print(response)
     return response.json()["user"]["API_key"]
 
 
@@ -44,7 +48,10 @@ def make_wallet(client: TestClient, API_key: uuid) -> uuid:
 
 def clear_tables() -> None:
     if os.getenv("REPOSITORY_KIND", "memory") == "sqlite":
+        UserInDatabase().clear_tables()
         StatisticInDatabase().clear_tables()
+        TransactionInDatabase().clear_tables()
+        WalletInDatabase().clear_tables()
 
 
 def test_not_show_statistics(client: TestClient) -> None:

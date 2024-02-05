@@ -7,7 +7,10 @@ import pytest
 from faker import Faker
 from fastapi.testclient import TestClient
 
+from infra.in_database.statistic_sqlite import StatisticInDatabase
+from infra.in_database.transaction_sqlite import TransactionInDatabase
 from infra.in_database.user_sqlite import UserInDatabase
+from infra.in_database.wallet_sqlite import WalletInDatabase
 from runner.setup import init_app
 
 
@@ -30,7 +33,9 @@ class Fake:
 def clear_tables() -> None:
     if os.getenv("REPOSITORY_KIND", "memory") == "sqlite":
         UserInDatabase().clear_tables()
-
+        StatisticInDatabase().clear_tables()
+        TransactionInDatabase().clear_tables()
+        WalletInDatabase().clear_tables()
 
 def test_should_create(client: TestClient) -> None:
     clear_tables()

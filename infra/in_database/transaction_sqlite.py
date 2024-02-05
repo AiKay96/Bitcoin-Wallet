@@ -27,7 +27,8 @@ class TransactionInDatabase:
             cursor = connection.cursor()
             cursor.execute(create_table_query)
             connection.commit()
-    def clear_table(self) -> None:
+
+    def clear_tables(self) -> None:
         delete_table_query = """
               DELETE FROM wallet_transactions;
         """
