@@ -3,6 +3,7 @@ import os
 from fastapi import FastAPI
 
 from infra.in_database.statistic_sqlite import StatisticInDatabase
+from infra.in_database.transaction_sqlite import TransactionInDatabase
 from infra.in_database.user_sqlite import UserInDatabase
 from infra.in_database.wallet_sqlite import WalletInDatabase
 from infra.in_memory.statistics import StatisticInMemory
@@ -29,6 +30,7 @@ def init_app():
         app.state.wallets = WalletInDatabase()
         app.state.users = UserInDatabase()
         app.state.statistics = StatisticInDatabase()
+        app.state.transactions = TransactionInDatabase()
     else:
         app.state.users = UserInMemory()
         app.state.wallets = WalletInMemory()

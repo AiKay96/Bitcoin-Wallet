@@ -8,6 +8,7 @@ from core.users import User
 from core.wallets import Wallet
 from infra.in_database.user_sqlite import UserInDatabase
 
+
 @dataclass
 class WalletInDatabase:
     def __init__(self, db_path: str = "./database.db") -> None:
@@ -25,6 +26,7 @@ class WalletInDatabase:
         with sqlite3.connect(self.db_path) as connection:
             cursor = connection.cursor()
             cursor.execute(create_table_query)
+            connection.commit()
 
     def clear_tables(self) -> None:
         truncate_units_query = """
@@ -35,7 +37,6 @@ class WalletInDatabase:
             cursor.execute(truncate_units_query)
             connection.commit()
 
-    # useristvis chasamatebelia +1 wallet.
     def create(self, wallet: Wallet, user: User) -> Wallet:
         if user.wallets_number == constants.MAXIMUM_NUMBER_OF_WALLETS:
             raise CapacityError
@@ -94,3 +95,16 @@ class WalletInDatabase:
             wallets.append(wallet)
 
         return wallets
+
+    def change_balance(self, address: UUID, new_balance: int) -> None:
+        with sqlite3.connect(self.db_path) as connection:
+            cursor = connection.cursor()
+            cursor.execute(
+                """
+                UPDATE wallets
+                SET balance = ?
+                WHERE address = ?;
+                """,
+                (new_balance, str(address))
+            )
+            connection.commit()

@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from uuid import UUID
 
 from core.errors import ExistsError, DoesNotExistError
+from core.transactions import Transaction
 from core.users import User
 from core.wallets import Wallet
 
@@ -30,3 +31,7 @@ class UserInMemory:
         if wallet is None:
             raise DoesNotExistError("User does not have this wallet")
         return wallet
+
+    def get_transactions(self, key: UUID) -> list[Transaction]:
+        user = self.get(key)
+        return user.transactions

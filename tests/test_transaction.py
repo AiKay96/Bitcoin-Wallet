@@ -1,3 +1,4 @@
+import os
 import uuid
 from dataclasses import dataclass, field
 from typing import Any
@@ -7,6 +8,7 @@ from faker import Faker
 from fastapi.testclient import TestClient
 
 from core import constants
+from infra.in_database.transaction_sqlite import TransactionInDatabase
 from runner.setup import init_app
 
 
@@ -40,7 +42,13 @@ def make_wallet(client: TestClient, API_key: uuid) -> uuid:
     return response.json()["wallet"]["address"]
 
 
+def clear_tables() -> None:
+    if os.getenv("REPOSITORY_KIND", "memory") == "sqlite":
+        TransactionInDatabase().clear_table()
+
+
 def test_should_create_transaction_same_user(client: TestClient) -> None:
+    clear_tables()
     API_key = make_user(client)
     wallet_from = make_wallet(client, API_key)
     wallet_to = make_wallet(client, API_key)
@@ -52,6 +60,7 @@ def test_should_create_transaction_same_user(client: TestClient) -> None:
 
 
 def test_should_create_transaction(client: TestClient) -> None:
+    clear_tables()
     API_key1 = make_user(client)
     wallet_from = make_wallet(client, API_key1)
     API_key2 = make_user(client)
@@ -64,6 +73,7 @@ def test_should_create_transaction(client: TestClient) -> None:
 
 
 def test_should_not_create(client: TestClient) -> None:
+    clear_tables()
     API_key = Fake().unknown_id()
     wallet_from = Fake().unknown_id()
     wallet_to = Fake().unknown_id()
@@ -76,6 +86,7 @@ def test_should_not_create(client: TestClient) -> None:
 
 
 def test_equal_error(client: TestClient) -> None:
+    clear_tables()
     API_key = make_user(client)
     wallet = make_wallet(client, API_key)
 
@@ -87,6 +98,7 @@ def test_equal_error(client: TestClient) -> None:
 
 
 def test_balance_error(client: TestClient) -> None:
+    clear_tables()
     API_key1 = make_user(client)
     wallet1 = make_wallet(client, API_key1)
     API_key2 = make_user(client)
@@ -104,6 +116,7 @@ def test_balance_error(client: TestClient) -> None:
 
 
 def test_transaction_validity(client: TestClient) -> None:
+    clear_tables()
     API_key1 = make_user(client)
     wallet1 = make_wallet(client, API_key1)
     API_key2 = make_user(client)
@@ -123,6 +136,7 @@ def test_transaction_validity(client: TestClient) -> None:
 
 
 def test_get_transactions(client: TestClient) -> None:
+    clear_tables()
     API_key1 = make_user(client)
     API_key2 = make_user(client)
     wallet1 = make_wallet(client, API_key1)
@@ -147,6 +161,7 @@ def test_get_transactions(client: TestClient) -> None:
 
 
 def test_get_transactions_empty(client: TestClient) -> None:
+    clear_tables()
     API_key = make_user(client)
     response = client.get("/transactions", headers={"API_key": API_key})
 
@@ -155,6 +170,7 @@ def test_get_transactions_empty(client: TestClient) -> None:
 
 
 def test_should_not_get_transactions(client: TestClient) -> None:
+    clear_tables()
     API_key = Fake().unknown_id()
     response = client.get("/transactions", headers={"API_key": API_key})
 

@@ -23,6 +23,7 @@ class UserInDatabase:
         with sqlite3.connect(self.db_path) as connection:
             cursor = connection.cursor()
             cursor.execute(create_table_query)
+            connection.commit()
 
     def clear_tables(self) -> None:
         truncate_units_query = """
