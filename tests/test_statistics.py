@@ -1,3 +1,4 @@
+import os
 import uuid
 from dataclasses import dataclass, field
 from typing import Any
@@ -7,6 +8,7 @@ from faker import Faker
 from fastapi.testclient import TestClient
 
 from core.constants import ADMIN_API_KEY, COMMISSION
+from infra.in_database.statistic_sqlite import StatisticInDatabase
 from runner.setup import init_app
 
 
@@ -40,7 +42,13 @@ def make_wallet(client: TestClient, API_key: uuid) -> uuid:
     return response.json()["wallet"]["address"]
 
 
+def clear_tables() -> None:
+    if os.getenv("REPOSITORY_KIND", "memory") == "sqlite":
+        StatisticInDatabase().clear_tables()
+
+
 def test_not_show_statistics(client: TestClient) -> None:
+    clear_tables()
     API_key = Fake().unknown_id()
     response = client.get("/statistics", headers={"API_key": API_key})
 
@@ -49,6 +57,7 @@ def test_not_show_statistics(client: TestClient) -> None:
 
 
 def test_show_statistics_different_user(client: TestClient) -> None:
+    clear_tables()
     user1 = make_user(client)
     wallet1 = make_wallet(client, user1)
     user2 = make_user(client)
@@ -65,6 +74,7 @@ def test_show_statistics_different_user(client: TestClient) -> None:
 
 
 def test_show_statistics_multiple_transactions(client: TestClient) -> None:
+    clear_tables()
     user1 = make_user(client)
     wallet1 = make_wallet(client, user1)
     user2 = make_user(client)
@@ -82,6 +92,7 @@ def test_show_statistics_multiple_transactions(client: TestClient) -> None:
 
 
 def test_show_statistics_different_transactions(client: TestClient) -> None:
+    clear_tables()
     user1 = make_user(client)
     wallet1 = make_wallet(client, user1)
     user2 = make_user(client)
@@ -103,6 +114,7 @@ def test_show_statistics_different_transactions(client: TestClient) -> None:
 
 
 def test_show_statistics_same_user(client: TestClient) -> None:
+    clear_tables()
     user = make_user(client)
     wallet1 = make_wallet(client, user)
     wallet2 = make_wallet(client, user)

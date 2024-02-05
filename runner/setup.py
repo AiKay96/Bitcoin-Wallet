@@ -2,6 +2,7 @@ import os
 
 from fastapi import FastAPI
 
+from infra.in_database.statistic_sqlite import StatisticInDatabase
 from infra.in_database.user_sqlite import UserInDatabase
 from infra.in_database.wallet_sqlite import WalletInDatabase
 from infra.in_memory.statistics import StatisticInMemory
@@ -27,6 +28,7 @@ def init_app():
     if os.getenv("REPOSITORY_KIND", "memory") == "sqlite":
         app.state.wallets = WalletInDatabase()
         app.state.users = UserInDatabase()
+        app.state.statistics = StatisticInDatabase()
     else:
         app.state.users = UserInMemory()
         app.state.wallets = WalletInMemory()
