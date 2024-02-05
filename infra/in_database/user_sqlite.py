@@ -13,7 +13,6 @@ class UserInDatabase:
     def create_table(self) -> None:
         create_table_query = """
             CREATE TABLE IF NOT EXISTS users (
-                id TEXT PRIMARY KEY,
                 username TEXT NOT NULL,
                 password TEXT NOT NULL,
                 API_key TEXT NOT NULL,

@@ -2,6 +2,7 @@ import os
 
 from fastapi import FastAPI
 
+from infra.in_database.wallet_sqlite import WalletInDatabase
 from infra.in_memory.statistics import StatisticInMemory
 from infra.in_memory.transactions import TransactionInMemory
 from infra.in_memory.users import UserInMemory
@@ -19,9 +20,11 @@ def init_app():
     app.include_router(transaction_api)
     app.include_router(statistic_api)
 
+    os.environ["REPOSITORY_KIND"] = "sqlite"
+
     # need to change if/else.
-    if os.getenv("BOOK_REPOSITORY_KIND", "memory") == "sqlite":
-        ...
+    if os.getenv("REPOSITORY_KIND", "memory") == "sqlite":
+        app.state.wallets = WalletInDatabase()
     else:
         app.state.users = UserInMemory()
         app.state.wallets = WalletInMemory()
