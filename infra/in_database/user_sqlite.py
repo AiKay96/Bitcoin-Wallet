@@ -70,3 +70,21 @@ class UserInDatabase:
             else:
                 raise DoesNotExistError(f"User with key {key} does not exist.")
 
+    def increment_wallets_number(self, key: UUID) -> int:
+        increment_query = '''
+            UPDATE users SET wallets_number = wallets_number + 1 WHERE API_key = ?
+        '''
+
+        with sqlite3.connect(self.db_path) as connection:
+            cursor = connection.cursor()
+
+            cursor.execute(increment_query, (str(key),))
+            connection.commit()
+
+            cursor.execute('SELECT wallets_number FROM users WHERE API_key = ?', (str(key),))
+            updated_wallets_number = cursor.fetchone()
+
+            if updated_wallets_number:
+                return updated_wallets_number[0]
+            else:
+                raise DoesNotExistError(f"User with key {key} does not exist.")
