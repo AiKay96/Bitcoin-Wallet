@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from core.errors import ExistsError, DoesNotExistError
+from core.transactions import Transaction
 from core.users import User
 from core.wallets import Wallet
 
@@ -115,3 +116,49 @@ class UserInDatabase:
                     raise DoesNotExistError("User does not have this wallet")
             else:
                 raise DoesNotExistError(f"User with key {key} does not exist.")
+
+    def get_transactions(self, key: UUID) -> list[Transaction]:
+        self.get(key)
+        with sqlite3.connect(self.db_path) as connection:
+            cursor = connection.cursor()
+            cursor.execute(
+                """
+                SELECT API_key, balance, address
+                FROM wallets
+                WHERE API_key = ?
+                """,
+                (str(key),)
+            )
+            results = cursor.fetchall()
+
+        wallets = []
+        for result in results:
+            wallet = Wallet(API_key=result[0], balance=result[1], address=result[2])
+            wallets.append(wallet)
+        answer: list[Transaction] = []
+
+        addresses = [""] * 3
+
+        for i, wallet in enumerate(wallets[:3]):
+            addresses[i] = wallet.address
+
+        user_query = '''
+                    SELECT * FROM wallet_transactions WHERE wallet_from = ? or wallet_from = ? or wallet_from = ? 
+                                    or wallet_to = ? or wallet_to = ? or wallet_to = ?
+                '''
+        with sqlite3.connect(self.db_path) as connection:
+            cursor = connection.cursor()
+            cursor.execute(user_query, (
+                str(addresses[0]), str(addresses[1]), str(addresses[2]), str(addresses[0]), str(addresses[1]),
+                str(addresses[2]),))
+            data = cursor.fetchall()
+
+            for result in data:
+                transaction = Transaction(
+                    wallet_from=result[0],
+                    wallet_to=result[1],
+                    amount_in_satoshis=result[2]
+                )
+                answer.append(transaction)
+
+        return answer
