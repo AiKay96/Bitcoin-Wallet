@@ -1,7 +1,8 @@
 import sqlite3
 from dataclasses import dataclass
+from uuid import UUID
 
-from core.errors import ExistsError
+from core.errors import ExistsError, DoesNotExistError
 from core.users import User
 
 
@@ -52,5 +53,20 @@ class UserInDatabase:
 
         return user
 
+    def get(self, key: UUID) -> User:
+        get_user_query = '''
+            SELECT * FROM users WHERE API_key = ?
+        '''
 
+        with sqlite3.connect(self.db_path) as connection:
+            cursor = connection.cursor()
+
+            cursor.execute(get_user_query, (str(key),))
+            user_data = cursor.fetchone()
+
+            if user_data:
+                return User(username=user_data[0], password=user_data[1], API_key=UUID(user_data[2]),
+                            wallets_number=user_data[3])
+            else:
+                raise DoesNotExistError(f"User with key {key} does not exist.")
 
