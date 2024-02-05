@@ -1,3 +1,4 @@
+from typing import Dict, List, Any
 from uuid import UUID
 
 from fastapi import APIRouter, Header
@@ -10,6 +11,14 @@ from infra.wallet_api.dependables import TransactionRepositoryDependable, UserRe
     WalletRepositoryDependable, StatisticRepositoryDependable
 
 transaction_api = APIRouter(tags=["Transactions"])
+
+
+def extract_transaction_fields(transaction: Transaction) -> dict:
+    return {
+        "wallet_from": transaction.wallet_from,
+        "wallet_to": transaction.wallet_to,
+        "amount_in_satoshis": transaction.amount_in_satoshis
+    }
 
 
 class CreateTransactionRequest(BaseModel):
@@ -89,10 +98,11 @@ def create_transaction(
 def show_transaction(
         users: UserRepositoryDependable,
         API_key: UUID = Header(alias="API_key")
-) -> dict[str, dict] | JSONResponse:
+) -> dict[str, list[Any]] | JSONResponse:
     try:
         transactions = users.get_transactions(API_key)
-        return {"transactions": transactions}
+        modified_transactions = [extract_transaction_fields(item) for item in transactions]
+        return {"transactions": modified_transactions}
     except DoesNotExistError:
         return JSONResponse(
             status_code=404,

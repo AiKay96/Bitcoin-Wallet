@@ -1,3 +1,5 @@
+from typing import Dict, List, Any
+
 import requests
 from uuid import UUID
 
@@ -8,6 +10,7 @@ from starlette.responses import JSONResponse
 from core.errors import DoesNotExistError, CapacityError
 from core.wallets import Wallet
 from infra.wallet_api.dependables import WalletRepositoryDependable, UserRepositoryDependable
+from infra.wallet_api.transactions_api import extract_transaction_fields
 
 wallet_api = APIRouter(tags=["Wallets"])
 
@@ -114,10 +117,11 @@ def show_transaction(
         address: UUID,
         users: UserRepositoryDependable,
         API_key: UUID = Header(alias="API_key")
-) -> dict[str, dict] | JSONResponse:
+) -> dict[str, list[Any]] | JSONResponse:
     try:
         transactions = users.get_wallet(API_key, address).transactions
-        return {"transactions": transactions}
+        modified_transactions = [extract_transaction_fields(item) for item in transactions]
+        return {"transactions": modified_transactions}
     except DoesNotExistError:
         return JSONResponse(
             status_code=404,
