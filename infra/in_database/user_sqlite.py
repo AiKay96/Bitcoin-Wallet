@@ -4,6 +4,7 @@ from uuid import UUID
 
 from core.errors import ExistsError, DoesNotExistError
 from core.users import User
+from core.wallets import Wallet
 
 
 @dataclass
@@ -86,5 +87,30 @@ class UserInDatabase:
 
             if updated_wallets_number:
                 return updated_wallets_number[0]
+            else:
+                raise DoesNotExistError(f"User with key {key} does not exist.")
+
+    def get_wallet(self, key: UUID, address: UUID) -> Wallet:
+        user_query = '''
+            SELECT * FROM users WHERE API_key = ?
+        '''
+
+        with sqlite3.connect(self.db_path) as connection:
+            cursor = connection.cursor()
+
+            cursor.execute(user_query, (str(key),))
+            user_data = cursor.fetchone()
+
+            if user_data:
+                wallet_query = '''
+                    SELECT * FROM wallets WHERE user_id = ? AND address = ?
+                '''
+                cursor.execute(wallet_query, (str(key), str(address)))
+                wallet_data = cursor.fetchone()
+
+                if wallet_data:
+                    return Wallet(address=UUID(wallet_data[0]), balance=wallet_data[1], API_key=key)
+                else:
+                    raise DoesNotExistError("User does not have this wallet")
             else:
                 raise DoesNotExistError(f"User with key {key} does not exist.")
