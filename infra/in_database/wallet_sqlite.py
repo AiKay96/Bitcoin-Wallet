@@ -1,12 +1,14 @@
 import sqlite3
+from dataclasses import dataclass
 from uuid import UUID
 
 from core import constants
 from core.errors import CapacityError, DoesNotExistError
 from core.users import User
 from core.wallets import Wallet
+from infra.in_database.user_sqlite import UserInDatabase
 
-
+@dataclass
 class WalletInDatabase:
     def __init__(self, db_path: str = "./database.db") -> None:
         self.db_path = db_path
@@ -15,7 +17,7 @@ class WalletInDatabase:
     def create_table(self) -> None:
         create_table_query = """
             CREATE TABLE IF NOT EXISTS wallets (
-                API_KEY TEXT PRIMARY KEY,
+                API_key TEXT,
                 balance INT,
                 address TEXT
             );
@@ -38,6 +40,8 @@ class WalletInDatabase:
         if user.wallets_number == constants.MAXIMUM_NUMBER_OF_WALLETS:
             raise CapacityError
 
+        self.create_table()
+
         with sqlite3.connect(self.db_path) as connection:
             cursor = connection.cursor()
             cursor.execute(
@@ -45,10 +49,10 @@ class WalletInDatabase:
                 INSERT INTO wallets (API_key, balance, address)
                 VALUES (?, ?, ?)
                 """,
-                (wallet.API_key, wallet.balance, wallet.address)
+                (str(wallet.API_key), wallet.balance, str(wallet.address))
             )
             connection.commit()
-
+        UserInDatabase().increment_wallets_number(user.API_key)
         return wallet
 
     def get(self, key: UUID) -> Wallet:

@@ -103,7 +103,7 @@ class UserInDatabase:
 
             if user_data:
                 wallet_query = '''
-                    SELECT * FROM wallets WHERE user_id = ? AND address = ?
+                    SELECT * FROM wallets WHERE API_key = ? AND address = ?
                 '''
                 cursor.execute(wallet_query, (str(key), str(address)))
                 wallet_data = cursor.fetchone()
