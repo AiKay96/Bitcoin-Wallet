@@ -1,3 +1,4 @@
+import os
 import uuid
 from dataclasses import dataclass, field
 from typing import Any
@@ -8,6 +9,7 @@ from faker import Faker
 from fastapi.testclient import TestClient
 
 from core import constants
+from infra.in_database.wallet_sqlite import WalletInDatabase
 from runner.setup import init_app
 
 
@@ -30,7 +32,13 @@ class Fake:
         return self.faker.uuid4()
 
 
+def clear_tables() -> None:
+    if os.getenv("REPOSITORY_KIND", "memory") == "sqlite":
+        WalletInDatabase().clear_tables()
+
+
 def test_should_create(client: TestClient) -> None:
+    clear_tables()
     user = Fake().user()
     response = client.post("/users", json=user)
     API_key = response.json()["user"]["API_key"]
@@ -41,6 +49,7 @@ def test_should_create(client: TestClient) -> None:
 
 
 def test_should_not_create(client: TestClient) -> None:
+    clear_tables()
     API_key = Fake().unknown_id()
 
     response = client.post("/wallets", json={"API_key": API_key})
@@ -49,6 +58,7 @@ def test_should_not_create(client: TestClient) -> None:
 
 
 def test_should_not_4_wallet(client: TestClient) -> None:
+    clear_tables()
     user = Fake().user()
     response = client.post("/users", json=user)
     API_key = response.json()["user"]["API_key"]
@@ -59,6 +69,7 @@ def test_should_not_4_wallet(client: TestClient) -> None:
 
 
 def test_should_not_read_without_user(client: TestClient) -> None:
+    clear_tables()
     API_key = Fake().unknown_id()
     address = Fake().unknown_id()
     response = client.get(f"/wallets/{address}", headers={"API_key": API_key})
@@ -68,6 +79,7 @@ def test_should_not_read_without_user(client: TestClient) -> None:
 
 
 def test_should_not_read_without_address(client: TestClient) -> None:
+    clear_tables()
     user = Fake().user()
     response = client.post("/users", json=user)
     API_key = response.json()["user"]["API_key"]
@@ -79,6 +91,7 @@ def test_should_not_read_without_address(client: TestClient) -> None:
 
 
 def test_should_persist(client: TestClient) -> None:
+    clear_tables()
     user = Fake().user()
     response = client.post("/users", json=user)
     API_key = response.json()["user"]["API_key"]
