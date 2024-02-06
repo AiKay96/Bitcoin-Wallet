@@ -2,8 +2,8 @@ from dataclasses import dataclass, field
 from typing import Protocol
 from uuid import UUID, uuid4
 
-from core.transactions import Transaction
-from core.wallets import Wallet
+from BitcoinWallet.core.transactions import Transaction
+from BitcoinWallet.core.wallets import Wallet
 
 
 @dataclass
@@ -25,6 +25,9 @@ class UserRepository(Protocol):
         pass
 
     def get_wallet(self, key: UUID, address: UUID) -> Wallet:
+        pass
+
+    def get_transactions(self, key: UUID) -> list[Transaction]:
         pass
 
 

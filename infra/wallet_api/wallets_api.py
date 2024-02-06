@@ -1,31 +1,33 @@
-from typing import Dict, List, Any
-
-import requests
+from typing import Any
 from uuid import UUID
 
+import requests
 from fastapi import APIRouter, Header
 from pydantic import BaseModel
 from starlette.responses import JSONResponse
 
-from core.errors import DoesNotExistError, CapacityError
-from core.wallets import Wallet
-from infra.wallet_api.dependables import WalletRepositoryDependable, UserRepositoryDependable
-from infra.wallet_api.transactions_api import extract_transaction_fields
+from BitcoinWallet.core.errors import CapacityError, DoesNotExistError
+from BitcoinWallet.core.wallets import Wallet
+from BitcoinWallet.infra.wallet_api.dependables import (
+    UserRepositoryDependable,
+    WalletRepositoryDependable,
+)
+from BitcoinWallet.infra.wallet_api.transactions_api import extract_transaction_fields
 
 wallet_api = APIRouter(tags=["Wallets"])
 
 
-def usd_rate():
-    response = requests.get('https://blockchain.info/ticker')
+def usd_rate() -> float:
+    response = requests.get("https://blockchain.info/ticker")
     data = response.json()
-    return data['USD']['last']
+    return float(data["USD"]["last"])
 
 
-def extract_wallet_fields(wallet: Wallet) -> dict:
+def extract_wallet_fields(wallet: Wallet) -> dict[str, Any]:
     return {
         "address": wallet.address,
         "balance_in_BTC": wallet.balance_in_btc(),
-        "balance_in_USD": wallet.balance_in_btc() * usd_rate()
+        "balance_in_USD": wallet.balance_in_btc() * usd_rate(),
     }
 
 
@@ -46,7 +48,7 @@ class WalletItemEnvelope(BaseModel):
 class TransactionItem(BaseModel):
     wallet_from: UUID
     wallet_to: UUID
-    amount_in_satoshis: int
+    amount_in_satoshi: int
 
 
 class TransactionItemEnvelope(BaseModel):
@@ -63,10 +65,10 @@ class TransactionListEnvelope(BaseModel):
     response_model=WalletItemEnvelope,
 )
 def create_wallet(
-        request: CreateWalletRequest,
-        wallets: WalletRepositoryDependable,
-        users: UserRepositoryDependable,
-) -> dict[str, dict] | JSONResponse:
+    request: CreateWalletRequest,
+    wallets: WalletRepositoryDependable,
+    users: UserRepositoryDependable,
+) -> dict[str, Any] | JSONResponse:
     try:
         wallet = Wallet(**request.model_dump())
         user = users.get(request.API_key)
@@ -78,12 +80,12 @@ def create_wallet(
     except DoesNotExistError:
         return JSONResponse(
             status_code=404,
-            content={"message": f"User does not exists."},
+            content={"message": "User does not exists."},
         )
     except CapacityError:
         return JSONResponse(
             status_code=403,
-            content={"message": f"User has reached the maximum capacity of wallets."},
+            content={"message": "User has reached the maximum capacity of wallets."},
         )
 
 
@@ -93,10 +95,10 @@ def create_wallet(
     response_model=WalletItemEnvelope,
 )
 def show_wallet(
-        wallet_id: UUID,
-        users: UserRepositoryDependable,
-        API_key: UUID = Header(alias="API_key")
-) -> dict[str, dict] | JSONResponse:
+    wallet_id: UUID,
+    users: UserRepositoryDependable,
+    API_key: UUID = Header(alias="API_key"),
+) -> dict[str, Any] | JSONResponse:
     try:
         wallet = users.get_wallet(API_key, wallet_id)
         response_data = extract_wallet_fields(wallet)
@@ -104,7 +106,7 @@ def show_wallet(
     except DoesNotExistError:
         return JSONResponse(
             status_code=404,
-            content={"message": f"Wallet does not exist."},
+            content={"message": "Wallet does not exist."},
         )
 
 
@@ -114,16 +116,18 @@ def show_wallet(
     response_model=TransactionListEnvelope,
 )
 def show_transaction(
-        address: UUID,
-        users: UserRepositoryDependable,
-        API_key: UUID = Header(alias="API_key")
+    address: UUID,
+    users: UserRepositoryDependable,
+    API_key: UUID = Header(alias="API_key"),
 ) -> dict[str, list[Any]] | JSONResponse:
     try:
         transactions = users.get_wallet(API_key, address).transactions
-        modified_transactions = [extract_transaction_fields(item) for item in transactions]
+        modified_transactions = [
+            extract_transaction_fields(item) for item in transactions
+        ]
         return {"transactions": modified_transactions}
     except DoesNotExistError:
         return JSONResponse(
             status_code=404,
-            content={"message": f"Wallet does not exist."},
+            content={"message": "Wallet does not exist."},
         )

@@ -2,11 +2,11 @@ import sqlite3
 from dataclasses import dataclass
 from uuid import UUID
 
-from core.constants import COMMISSION
-from core.errors import DoesNotExistError, EqualityError, BalanceError
-from core.transactions import Transaction
-from core.users import User
-from infra.in_database.wallet_sqlite import WalletInDatabase
+from BitcoinWallet.core.constants import COMMISSION
+from BitcoinWallet.core.errors import BalanceError, DoesNotExistError, EqualityError
+from BitcoinWallet.core.transactions import Transaction
+from BitcoinWallet.core.users import User
+from BitcoinWallet.infra.in_database.wallet_sqlite import WalletInDatabase
 
 
 @dataclass
@@ -21,7 +21,7 @@ class TransactionInDatabase:
                 transaction_id TEXT NOT NULL,
                 wallet_from TEXT NOT NULL,
                 wallet_to TEXT NOT NULL,
-                amount_in_satoshis INT NOT NULL
+                amount_in_satoshi INT NOT NULL
             );
         """
         with sqlite3.connect(self.db_path) as connection:
@@ -47,28 +47,39 @@ class TransactionInDatabase:
         if transaction.wallet_from == transaction.wallet_to:
             raise EqualityError("Can not send money on the same wallet.")
 
-        if wallet_from.balance < transaction.amount_in_satoshis:
+        if wallet_from.balance < transaction.amount_in_satoshi:
             raise BalanceError("Not enough money.")
 
-        WalletInDatabase().change_balance(transaction.wallet_from,
-                                          round(wallet_from.balance - transaction.amount_in_satoshis))
-        WalletInDatabase().change_balance(transaction.wallet_to,
-                                          wallet_to.balance + transaction.amount_in_satoshis * (1 - COMMISSION))
+        WalletInDatabase().change_balance(
+            transaction.wallet_from,
+            round(wallet_from.balance - transaction.amount_in_satoshi),
+        )
+        new_balance = wallet_to.balance + transaction.amount_in_satoshi * (
+            1 - COMMISSION
+        )
+
+        WalletInDatabase().change_balance(transaction.wallet_to, round(new_balance))
 
         with sqlite3.connect(self.db_path) as connection:
             cursor = connection.cursor()
             cursor.execute(
                 """
-                INSERT INTO wallet_transactions (transaction_id,wallet_from, wallet_to, amount_in_satoshis)
-                VALUES (?, ?, ?,?);
+                INSERT INTO wallet_transactions
+                    (transaction_id, wallet_from, wallet_to, amount_in_satoshi)
+                VALUES
+                    (?, ?, ?, ?);
                 """,
-                (str(transaction.transaction_id), str(transaction.wallet_from), str(transaction.wallet_to),
-                 transaction.amount_in_satoshis)
+                (
+                    str(transaction.transaction_id),
+                    str(transaction.wallet_from),
+                    str(transaction.wallet_to),
+                    transaction.amount_in_satoshi,
+                ),
             )
             connection.commit()
 
         commission = (
-            round(transaction.amount_in_satoshis * COMMISSION)
+            round(transaction.amount_in_satoshi * COMMISSION)
             if wallet_from.API_key != wallet_to.API_key
             else 0
         )
@@ -81,11 +92,11 @@ class TransactionInDatabase:
             cursor = connection.cursor()
             cursor.execute(
                 """
-                SELECT transaction_id,wallet_from, wallet_to, amount_in_satoshis
+                SELECT transaction_id,wallet_from, wallet_to, amount_in_satoshi
                 FROM wallet_transactions
                 WHERE wallet_from = ? OR wallet_to = ?;
                 """,
-                (str(address), str(address))
+                (str(address), str(address)),
             )
 
             results = cursor.fetchall()
@@ -95,9 +106,8 @@ class TransactionInDatabase:
                     transaction_id=result[0],
                     wallet_from=result[1],
                     wallet_to=result[2],
-                    amount_in_satoshis=result[3]
+                    amount_in_satoshi=result[3],
                 )
                 transactions.append(transaction)
 
         return transactions
-

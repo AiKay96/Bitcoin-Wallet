@@ -1,19 +1,19 @@
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Header
 from pydantic import BaseModel
 from starlette.responses import JSONResponse
 
-from core.errors import AccessError
-
-from infra.wallet_api.dependables import StatisticRepositoryDependable
+from BitcoinWallet.core.errors import AccessError
+from BitcoinWallet.infra.wallet_api.dependables import StatisticRepositoryDependable
 
 statistic_api = APIRouter(tags=["Statistics"])
 
 
 class StatisticItem(BaseModel):
     transaction_number: int
-    profit_in_satoshis: int
+    profit_in_satoshi: int
 
 
 class StatisticItemEnvelope(BaseModel):
@@ -26,14 +26,13 @@ class StatisticItemEnvelope(BaseModel):
     response_model=StatisticItemEnvelope,
 )
 def show_statistic(
-        statistics: StatisticRepositoryDependable,
-        API_key: UUID = Header(alias="API_key")
-) -> dict[str, dict] | JSONResponse:
+    statistics: StatisticRepositoryDependable, API_key: UUID = Header(alias="API_key")
+) -> dict[str, Any] | JSONResponse:
     try:
-        statistics = statistics.get(API_key)
-        return {"statistics": statistics}
+        statistic = statistics.get(API_key)
+        return {"statistics": statistic}
     except AccessError:
         return JSONResponse(
             status_code=403,
-            content={"message": f"User does not have access to statistics."},
+            content={"message": "User does not have access to statistics."},
         )

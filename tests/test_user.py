@@ -7,11 +7,11 @@ import pytest
 from faker import Faker
 from fastapi.testclient import TestClient
 
-from infra.in_database.statistic_sqlite import StatisticInDatabase
-from infra.in_database.transaction_sqlite import TransactionInDatabase
-from infra.in_database.user_sqlite import UserInDatabase
-from infra.in_database.wallet_sqlite import WalletInDatabase
-from runner.setup import init_app
+from BitcoinWallet.infra.in_database.statistic_sqlite import StatisticInDatabase
+from BitcoinWallet.infra.in_database.transaction_sqlite import TransactionInDatabase
+from BitcoinWallet.infra.in_database.user_sqlite import UserInDatabase
+from BitcoinWallet.infra.in_database.wallet_sqlite import WalletInDatabase
+from BitcoinWallet.runner.setup import init_app
 
 
 @pytest.fixture
@@ -24,10 +24,7 @@ class Fake:
     faker: Faker = field(default_factory=Faker)
 
     def user(self) -> dict[str, Any]:
-        return {
-            "username": self.faker.word(),
-            "password": self.faker.word()
-        }
+        return {"username": self.faker.word(), "password": self.faker.word()}
 
 
 def clear_tables() -> None:
@@ -36,6 +33,7 @@ def clear_tables() -> None:
         StatisticInDatabase().clear_tables()
         TransactionInDatabase().clear_tables()
         WalletInDatabase().clear_tables()
+
 
 def test_should_create(client: TestClient) -> None:
     clear_tables()
@@ -59,4 +57,4 @@ def test_should_not_create_same(client: TestClient) -> None:
     response = client.post("/users", json=user)
 
     assert response.status_code == 409
-    assert response.json() == {'message': 'User already exists.'}
+    assert response.json() == {"message": "User already exists."}

@@ -1,21 +1,22 @@
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter
 from pydantic import BaseModel
 from starlette.responses import JSONResponse
 
-from core.errors import ExistsError
-from core.users import User
-from infra.wallet_api.dependables import UserRepositoryDependable
+from BitcoinWallet.core.errors import ExistsError
+from BitcoinWallet.core.users import User
+from BitcoinWallet.infra.wallet_api.dependables import UserRepositoryDependable
 
 user_api = APIRouter(tags=["Users"])
 
 
-def extract_user_fields(user: User) -> dict:
+def extract_user_fields(user: User) -> dict[str, Any]:
     return {
         "API_key": user.API_key,
         "username": user.username,
-        "password": user.password
+        "password": user.password,
     }
 
 
@@ -40,8 +41,8 @@ class UserItemEnvelope(BaseModel):
     response_model=UserItemEnvelope,
 )
 def create_user(
-        request: CreateUserRequest, users: UserRepositoryDependable
-) -> dict[str, dict] | JSONResponse:
+    request: CreateUserRequest, users: UserRepositoryDependable
+) -> dict[str, Any] | JSONResponse:
     try:
         user = User(**request.model_dump())
         users.create(user)
@@ -52,5 +53,5 @@ def create_user(
     except ExistsError:
         return JSONResponse(
             status_code=409,
-            content={"message": f"User already exists."},
+            content={"message": "User already exists."},
         )

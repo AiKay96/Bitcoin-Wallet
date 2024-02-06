@@ -2,21 +2,21 @@ import os
 
 from fastapi import FastAPI
 
-from infra.in_database.statistic_sqlite import StatisticInDatabase
-from infra.in_database.transaction_sqlite import TransactionInDatabase
-from infra.in_database.user_sqlite import UserInDatabase
-from infra.in_database.wallet_sqlite import WalletInDatabase
-from infra.in_memory.statistics import StatisticInMemory
-from infra.in_memory.transactions import TransactionInMemory
-from infra.in_memory.users import UserInMemory
-from infra.wallet_api.statistics_api import statistic_api
-from infra.wallet_api.transactions_api import transaction_api
-from infra.wallet_api.users_api import user_api
-from infra.in_memory.wallets import WalletInMemory
-from infra.wallet_api.wallets_api import wallet_api
+from BitcoinWallet.infra.in_database.statistic_sqlite import StatisticInDatabase
+from BitcoinWallet.infra.in_database.transaction_sqlite import TransactionInDatabase
+from BitcoinWallet.infra.in_database.user_sqlite import UserInDatabase
+from BitcoinWallet.infra.in_database.wallet_sqlite import WalletInDatabase
+from BitcoinWallet.infra.in_memory.statistics import StatisticInMemory
+from BitcoinWallet.infra.in_memory.transactions import TransactionInMemory
+from BitcoinWallet.infra.in_memory.users import UserInMemory
+from BitcoinWallet.infra.in_memory.wallets import WalletInMemory
+from BitcoinWallet.infra.wallet_api.statistics_api import statistic_api
+from BitcoinWallet.infra.wallet_api.transactions_api import transaction_api
+from BitcoinWallet.infra.wallet_api.users_api import user_api
+from BitcoinWallet.infra.wallet_api.wallets_api import wallet_api
 
 
-def init_app():
+def init_app() -> FastAPI:
     app = FastAPI()
     app.include_router(user_api)
     app.include_router(wallet_api)

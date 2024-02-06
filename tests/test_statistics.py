@@ -1,5 +1,4 @@
 import os
-import uuid
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -7,12 +6,12 @@ import pytest
 from faker import Faker
 from fastapi.testclient import TestClient
 
-from core.constants import ADMIN_API_KEY, COMMISSION
-from infra.in_database.statistic_sqlite import StatisticInDatabase
-from infra.in_database.transaction_sqlite import TransactionInDatabase
-from infra.in_database.user_sqlite import UserInDatabase
-from infra.in_database.wallet_sqlite import WalletInDatabase
-from runner.setup import init_app
+from BitcoinWallet.core.constants import ADMIN_API_KEY, COMMISSION
+from BitcoinWallet.infra.in_database.statistic_sqlite import StatisticInDatabase
+from BitcoinWallet.infra.in_database.transaction_sqlite import TransactionInDatabase
+from BitcoinWallet.infra.in_database.user_sqlite import UserInDatabase
+from BitcoinWallet.infra.in_database.wallet_sqlite import WalletInDatabase
+from BitcoinWallet.runner.setup import init_app
 
 
 @pytest.fixture
@@ -25,25 +24,21 @@ class Fake:
     faker: Faker = field(default_factory=Faker)
 
     def user(self) -> dict[str, Any]:
-        return {
-            "username": self.faker.word(),
-            "password": self.faker.word()
-        }
+        return {"username": self.faker.word(), "password": self.faker.word()}
 
-    def unknown_id(self) -> uuid:
-        return self.faker.uuid4()
+    def unknown_id(self) -> str:
+        return str(self.faker.uuid4())
 
 
-def make_user(client: TestClient) -> uuid:
+def make_user(client: TestClient) -> str:
     user = Fake().user()
     response = client.post("/users", json=user)
-    print(response)
-    return response.json()["user"]["API_key"]
+    return str(response.json()["user"]["API_key"])
 
 
-def make_wallet(client: TestClient, API_key: uuid) -> uuid:
+def make_wallet(client: TestClient, API_key: str) -> str:
     response = client.post("/wallets", json={"API_key": API_key})
-    return response.json()["wallet"]["address"]
+    return str(response.json()["wallet"]["address"])
 
 
 def clear_tables() -> None:
@@ -60,7 +55,8 @@ def test_not_show_statistics(client: TestClient) -> None:
     response = client.get("/statistics", headers={"API_key": API_key})
 
     assert response.status_code == 403
-    assert response.json() == {'message': 'User does not have access to statistics.'}
+    expected_response = {"message": "User does not have access to statistics."}
+    assert response.json() == expected_response
 
 
 def test_show_statistics_different_user(client: TestClient) -> None:
@@ -70,14 +66,20 @@ def test_show_statistics_different_user(client: TestClient) -> None:
     user2 = make_user(client)
     wallet2 = make_wallet(client, user2)
 
-    client.post("/transactions",
-                json={"API_key": user1, "wallet_from": wallet1, "wallet_to": wallet2,
-                      "amount_in_satoshis": 100})
+    client.post(
+        "/transactions",
+        json={
+            "API_key": user1,
+            "wallet_from": wallet1,
+            "wallet_to": wallet2,
+            "amount_in_satoshi": 100,
+        },
+    )
 
     response = client.get("/statistics", headers={"API_key": ADMIN_API_KEY})
 
     assert response.status_code == 200
-    assert response.json()["statistics"]["profit_in_satoshis"] == round(100 * COMMISSION)
+    assert response.json()["statistics"]["profit_in_satoshi"] == round(100 * COMMISSION)
 
 
 def test_show_statistics_multiple_transactions(client: TestClient) -> None:
@@ -88,9 +90,15 @@ def test_show_statistics_multiple_transactions(client: TestClient) -> None:
     wallet2 = make_wallet(client, user2)
 
     for i in range(3):
-        client.post("/transactions",
-                    json={"API_key": user1, "wallet_from": wallet1, "wallet_to": wallet2,
-                          "amount_in_satoshis": 100})
+        client.post(
+            "/transactions",
+            json={
+                "API_key": user1,
+                "wallet_from": wallet1,
+                "wallet_to": wallet2,
+                "amount_in_satoshi": 100,
+            },
+        )
 
     response = client.get("/statistics", headers={"API_key": ADMIN_API_KEY})
 
@@ -106,18 +114,30 @@ def test_show_statistics_different_transactions(client: TestClient) -> None:
     wallet2 = make_wallet(client, user2)
     wallet3 = make_wallet(client, user2)
 
-    client.post("/transactions",
-                json={"API_key": user1, "wallet_from": wallet1, "wallet_to": wallet2,
-                      "amount_in_satoshis": 100})
+    client.post(
+        "/transactions",
+        json={
+            "API_key": user1,
+            "wallet_from": wallet1,
+            "wallet_to": wallet2,
+            "amount_in_satoshi": 100,
+        },
+    )
 
-    client.post("/transactions",
-                json={"API_key": user2, "wallet_from": wallet2, "wallet_to": wallet3,
-                      "amount_in_satoshis": 200})
+    client.post(
+        "/transactions",
+        json={
+            "API_key": user2,
+            "wallet_from": wallet2,
+            "wallet_to": wallet3,
+            "amount_in_satoshi": 200,
+        },
+    )
 
     response = client.get("/statistics", headers={"API_key": ADMIN_API_KEY})
 
     assert response.status_code == 200
-    assert response.json()["statistics"]["profit_in_satoshis"] == round(100 * COMMISSION)
+    assert response.json()["statistics"]["profit_in_satoshi"] == round(100 * COMMISSION)
 
 
 def test_show_statistics_same_user(client: TestClient) -> None:
@@ -126,11 +146,17 @@ def test_show_statistics_same_user(client: TestClient) -> None:
     wallet1 = make_wallet(client, user)
     wallet2 = make_wallet(client, user)
 
-    client.post("/transactions",
-                json={"API_key": user, "wallet_from": wallet1, "wallet_to": wallet2,
-                      "amount_in_satoshis": 100})
+    client.post(
+        "/transactions",
+        json={
+            "API_key": user,
+            "wallet_from": wallet1,
+            "wallet_to": wallet2,
+            "amount_in_satoshi": 100,
+        },
+    )
 
     response = client.get("/statistics", headers={"API_key": ADMIN_API_KEY})
 
     assert response.status_code == 200
-    assert response.json()["statistics"]["profit_in_satoshis"] == 0
+    assert response.json()["statistics"]["profit_in_satoshi"] == 0

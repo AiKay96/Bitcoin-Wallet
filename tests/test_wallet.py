@@ -1,19 +1,17 @@
 import os
-import uuid
 from dataclasses import dataclass, field
 from typing import Any
-from unittest.mock import ANY
 
 import pytest
 from faker import Faker
 from fastapi.testclient import TestClient
 
-from core import constants
-from infra.in_database.statistic_sqlite import StatisticInDatabase
-from infra.in_database.transaction_sqlite import TransactionInDatabase
-from infra.in_database.user_sqlite import UserInDatabase
-from infra.in_database.wallet_sqlite import WalletInDatabase
-from runner.setup import init_app
+from BitcoinWallet.core.constants import MAXIMUM_NUMBER_OF_WALLETS
+from BitcoinWallet.infra.in_database.statistic_sqlite import StatisticInDatabase
+from BitcoinWallet.infra.in_database.transaction_sqlite import TransactionInDatabase
+from BitcoinWallet.infra.in_database.user_sqlite import UserInDatabase
+from BitcoinWallet.infra.in_database.wallet_sqlite import WalletInDatabase
+from BitcoinWallet.runner.setup import init_app
 
 
 @pytest.fixture
@@ -26,13 +24,10 @@ class Fake:
     faker: Faker = field(default_factory=Faker)
 
     def user(self) -> dict[str, Any]:
-        return {
-            "username": self.faker.word(),
-            "password": self.faker.word()
-        }
+        return {"username": self.faker.word(), "password": self.faker.word()}
 
-    def unknown_id(self) -> uuid:
-        return self.faker.uuid4()
+    def unknown_id(self) -> str:
+        return str(self.faker.uuid4())
 
 
 def clear_tables() -> None:
@@ -60,7 +55,7 @@ def test_should_not_create(client: TestClient) -> None:
 
     response = client.post("/wallets", json={"API_key": API_key})
     assert response.status_code == 404
-    assert response.json() == {'message': 'User does not exists.'}
+    assert response.json() == {"message": "User does not exists."}
 
 
 def test_should_not_4_wallet(client: TestClient) -> None:
@@ -68,10 +63,12 @@ def test_should_not_4_wallet(client: TestClient) -> None:
     user = Fake().user()
     response = client.post("/users", json=user)
     API_key = response.json()["user"]["API_key"]
-    for i in range(constants.MAXIMUM_NUMBER_OF_WALLETS + 1):
+    for i in range(MAXIMUM_NUMBER_OF_WALLETS + 1):
         response = client.post("/wallets", json={"API_key": API_key})
     assert response.status_code == 403
-    assert response.json() == {'message': 'User has reached the maximum capacity of wallets.'}
+    assert response.json() == {
+        "message": "User has reached the maximum capacity of wallets."
+    }
 
 
 def test_should_not_read_without_user(client: TestClient) -> None:
@@ -81,7 +78,7 @@ def test_should_not_read_without_user(client: TestClient) -> None:
     response = client.get(f"/wallets/{address}", headers={"API_key": API_key})
 
     assert response.status_code == 404
-    assert response.json() == {"message": f"Wallet does not exist."}
+    assert response.json() == {"message": "Wallet does not exist."}
 
 
 def test_should_not_read_without_address(client: TestClient) -> None:
@@ -93,7 +90,7 @@ def test_should_not_read_without_address(client: TestClient) -> None:
     response = client.get(f"/wallets/{address}", headers={"API_key": API_key})
 
     assert response.status_code == 404
-    assert response.json() == {"message": f"Wallet does not exist."}
+    assert response.json() == {"message": "Wallet does not exist."}
 
 
 def test_should_persist(client: TestClient) -> None:

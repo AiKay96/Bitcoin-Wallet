@@ -1,14 +1,13 @@
 from dataclasses import dataclass
 
-from core import constants
-from core.errors import DoesNotExistError, EqualityError, BalanceError
-from core.transactions import Transaction
-from core.users import User
+from BitcoinWallet.core.constants import COMMISSION
+from BitcoinWallet.core.errors import BalanceError, DoesNotExistError, EqualityError
+from BitcoinWallet.core.transactions import Transaction
+from BitcoinWallet.core.users import User
 
 
 @dataclass
 class TransactionInMemory:
-
     @staticmethod
     def create(transaction: Transaction, user_from: User, user_to: User) -> int:
         wallet_from = user_from.wallets[transaction.wallet_from]
@@ -20,11 +19,11 @@ class TransactionInMemory:
         if transaction.wallet_from == transaction.wallet_to:
             raise EqualityError("Can not send money on the same wallet.")
 
-        if wallet_from.balance < transaction.amount_in_satoshis:
+        if wallet_from.balance < transaction.amount_in_satoshi:
             raise BalanceError("Not enough money.")
 
-        wallet_from.balance -= transaction.amount_in_satoshis
-        wallet_to.balance += transaction.amount_in_satoshis * (1-constants.COMMISSION)
+        wallet_from.balance -= transaction.amount_in_satoshi
+        wallet_to.balance += transaction.amount_in_satoshi * (1 - COMMISSION)
         if transaction not in wallet_from.transactions:
             wallet_from.transactions.append(transaction)
         if transaction not in wallet_to.transactions:
@@ -36,7 +35,7 @@ class TransactionInMemory:
             user_to.transactions.append(transaction)
 
         commission = (
-            round(transaction.amount_in_satoshis * constants.COMMISSION)
+            round(transaction.amount_in_satoshi * COMMISSION)
             if wallet_from.API_key != wallet_to.API_key
             else 0
         )

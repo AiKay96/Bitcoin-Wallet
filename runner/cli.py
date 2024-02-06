@@ -4,7 +4,7 @@ import uvicorn
 from dotenv import load_dotenv
 from typer import Typer
 
-from runner.setup import init_app
+from BitcoinWallet.runner.setup import init_app
 
 cli = Typer(no_args_is_help=True, add_completion=False)
 

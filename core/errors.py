@@ -17,5 +17,6 @@ class EqualityError(Exception):
 class BalanceError(Exception):
     pass
 
+
 class AccessError(Exception):
     pass

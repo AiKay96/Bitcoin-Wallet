@@ -2,11 +2,11 @@ import sqlite3
 from dataclasses import dataclass
 from uuid import UUID
 
-from core import constants
-from core.errors import CapacityError, DoesNotExistError
-from core.users import User
-from core.wallets import Wallet
-from infra.in_database.user_sqlite import UserInDatabase
+from BitcoinWallet.core.constants import MAXIMUM_NUMBER_OF_WALLETS
+from BitcoinWallet.core.errors import CapacityError, DoesNotExistError
+from BitcoinWallet.core.users import User
+from BitcoinWallet.core.wallets import Wallet
+from BitcoinWallet.infra.in_database.user_sqlite import UserInDatabase
 
 
 @dataclass
@@ -38,7 +38,7 @@ class WalletInDatabase:
             connection.commit()
 
     def create(self, wallet: Wallet, user: User) -> Wallet:
-        if user.wallets_number == constants.MAXIMUM_NUMBER_OF_WALLETS:
+        if user.wallets_number == MAXIMUM_NUMBER_OF_WALLETS:
             raise CapacityError
 
         self.create_table()
@@ -50,7 +50,7 @@ class WalletInDatabase:
                 INSERT INTO wallets (API_key, balance, address)
                 VALUES (?, ?, ?)
                 """,
-                (str(wallet.API_key), wallet.balance, str(wallet.address))
+                (str(wallet.API_key), wallet.balance, str(wallet.address)),
             )
             connection.commit()
         UserInDatabase().increment_wallets_number(user.API_key)
@@ -65,7 +65,7 @@ class WalletInDatabase:
                 FROM wallets
                 WHERE address = ?
                 """,
-                (str(key),)
+                (str(key),),
             )
             result = cursor.fetchone()
 
@@ -76,7 +76,6 @@ class WalletInDatabase:
 
         return wallet
 
-
     def change_balance(self, address: UUID, new_balance: int) -> None:
         with sqlite3.connect(self.db_path) as connection:
             cursor = connection.cursor()
@@ -86,6 +85,6 @@ class WalletInDatabase:
                 SET balance = ?
                 WHERE address = ?;
                 """,
-                (new_balance, str(address))
+                (new_balance, str(address)),
             )
             connection.commit()

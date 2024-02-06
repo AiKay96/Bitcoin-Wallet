@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
 from uuid import UUID
 
-from core.constants import ADMIN_API_KEY
-from core.errors import AccessError
-from core.statistics import Statistic
+from BitcoinWallet.core.constants import ADMIN_API_KEY
+from BitcoinWallet.core.errors import AccessError
+from BitcoinWallet.core.statistics import Statistic
 
 
 @dataclass
@@ -17,4 +17,4 @@ class StatisticInMemory:
 
     def update(self, commission: int) -> None:
         self.statistic.transaction_number += 1
-        self.statistic.profit_in_satoshis += commission
+        self.statistic.profit_in_satoshi += commission

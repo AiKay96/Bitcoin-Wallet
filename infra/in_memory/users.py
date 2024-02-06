@@ -1,10 +1,10 @@
 from dataclasses import dataclass, field
 from uuid import UUID
 
-from core.errors import ExistsError, DoesNotExistError
-from core.transactions import Transaction
-from core.users import User
-from core.wallets import Wallet
+from BitcoinWallet.core.errors import DoesNotExistError, ExistsError
+from BitcoinWallet.core.transactions import Transaction
+from BitcoinWallet.core.users import User
+from BitcoinWallet.core.wallets import Wallet
 
 
 @dataclass

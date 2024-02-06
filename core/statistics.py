@@ -1,14 +1,12 @@
 from dataclasses import dataclass
-from uuid import UUID
 from typing import Protocol
-
-from core.constants import ADMIN_API_KEY
+from uuid import UUID
 
 
 @dataclass
 class Statistic:
     transaction_number: int = 0
-    profit_in_satoshis: int = 0
+    profit_in_satoshi: int = 0
 
 
 class StatisticRepository(Protocol):
