@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from starlette.responses import JSONResponse
 
 from BitcoinWallet.core.errors import AccessError
-from BitcoinWallet.infra.wallet_api.dependables import StatisticRepositoryDependable
+from BitcoinWallet.infra.fast_api.dependables import StatisticRepositoryDependable
 
 statistic_api = APIRouter(tags=["Statistics"])
 

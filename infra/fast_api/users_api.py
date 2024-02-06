@@ -7,7 +7,7 @@ from starlette.responses import JSONResponse
 
 from BitcoinWallet.core.errors import ExistsError
 from BitcoinWallet.core.users import User
-from BitcoinWallet.infra.wallet_api.dependables import UserRepositoryDependable
+from BitcoinWallet.infra.fast_api.dependables import UserRepositoryDependable
 
 user_api = APIRouter(tags=["Users"])
 

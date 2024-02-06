@@ -26,6 +26,22 @@ class StatisticInDatabase:
             cursor.execute(create_table_query)
             connection.commit()
 
+        select_statistic_query = """SELECT * FROM statistics"""
+
+        with sqlite3.connect(self.db_path) as connection:
+            cursor = connection.cursor()
+            cursor.execute(select_statistic_query)
+            statistic_data = cursor.fetchone()
+            if statistic_data is None:
+                insert_default_statistic_query = """
+                            INSERT INTO statistics
+                                (transaction_number, profit_in_satoshi)
+                            VALUES
+                                (0, 0);
+                        """
+                cursor.execute(insert_default_statistic_query)
+                connection.commit()
+
     def clear_tables(self) -> None:
         update_statistics_query = """
             UPDATE statistics
@@ -42,7 +58,8 @@ class StatisticInDatabase:
             raise AccessError("Statistics not available.")
 
         get_statistic_query = """
-               SELECT transaction_number, profit_in_satoshi FROM statistics;
+               SELECT transaction_number,
+               profit_in_satoshi FROM statistics;
            """
 
         with sqlite3.connect(self.db_path) as connection:
@@ -57,22 +74,6 @@ class StatisticInDatabase:
             )
 
     def update(self, commission: int) -> None:
-        select_statistic_query = """SELECT * FROM statistics"""
-
-        with sqlite3.connect(self.db_path) as connection:
-            cursor = connection.cursor()
-            cursor.execute(select_statistic_query)
-            statistic_data = cursor.fetchone()
-            if statistic_data is None:
-                insert_default_statistic_query = """
-                    INSERT INTO statistics
-                        (transaction_number, profit_in_satoshi)
-                    VALUES
-                        (0, 0);
-                """
-                cursor.execute(insert_default_statistic_query)
-                connection.commit()
-
         update_statistic_query = """
             UPDATE statistics
             SET

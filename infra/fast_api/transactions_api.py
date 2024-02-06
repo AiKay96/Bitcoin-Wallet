@@ -7,7 +7,7 @@ from starlette.responses import JSONResponse
 
 from BitcoinWallet.core.errors import BalanceError, DoesNotExistError, EqualityError
 from BitcoinWallet.core.transactions import Transaction
-from BitcoinWallet.infra.wallet_api.dependables import (
+from BitcoinWallet.infra.fast_api.dependables import (
     StatisticRepositoryDependable,
     TransactionRepositoryDependable,
     UserRepositoryDependable,

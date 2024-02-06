@@ -8,11 +8,11 @@ from starlette.responses import JSONResponse
 
 from BitcoinWallet.core.errors import CapacityError, DoesNotExistError
 from BitcoinWallet.core.wallets import Wallet
-from BitcoinWallet.infra.wallet_api.dependables import (
+from BitcoinWallet.infra.fast_api.dependables import (
     UserRepositoryDependable,
     WalletRepositoryDependable,
 )
-from BitcoinWallet.infra.wallet_api.transactions_api import extract_transaction_fields
+from BitcoinWallet.infra.fast_api.transactions_api import extract_transaction_fields
 
 wallet_api = APIRouter(tags=["Wallets"])
 

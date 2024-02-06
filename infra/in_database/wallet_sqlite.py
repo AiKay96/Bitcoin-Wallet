@@ -72,7 +72,11 @@ class WalletInDatabase:
         if result is None:
             raise DoesNotExistError(f"Wallet with key {key} does not exist.")
 
-        wallet = Wallet(API_key=result[0], balance=result[1], address=result[2])
+        wallet = Wallet(
+            API_key=result[0],
+            balance=result[1],
+            address=result[2],
+        )
 
         return wallet
 

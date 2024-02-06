@@ -46,7 +46,7 @@ HTTP 409
 `POST /wallets`
   - Requires API key
   - Create BTC wallet 
-  - Deposits 1 BTC (or 100000000 satoshis) automatically to the new wallet
+  - Deposits 1 BTC (or 100000000 satoshi) automatically to the new wallet
   - User may register up to 3 wallets
   - Returns wallet address and balance in BTC and USD
 
@@ -154,7 +154,7 @@ Request:
     "API_key": "27b4f218-1cc2-4694-b131-ad481dc08901",
     "wallet_from": "27b4f218-1cc2-4694-b131-ad481dc08902",
     "wallet_to": "27b4f218-1cc2-4694-b131-ad481dc08903",
-    "amount_in_satoshis": 100
+    "amount_in_satoshi": 100
 }
 ```
 
@@ -224,7 +224,7 @@ HTTP 200
     {
     "wallet from": "27b4f218-1cc2-4694-b131-ad481dc08902",
     "wallet to": "27b4f218-1cc2-4694-b131-ad481dc08903",
-    "amount in satoshis": 100
+    "amount in satoshi": 100
     }
   ]
 }  
@@ -236,7 +236,7 @@ HTTP 404
 ```json
 {
   "error": {
-    "message": "User with API_key<API_key> does not exist."
+    "message": "User does not exist."
   }
 }
 ```
@@ -266,7 +266,7 @@ HTTP 200
     {
     "wallet from": "27b4f218-1cc2-4694-b131-ad481dc08902",
     "wallet to": "27b4f218-1cc2-4694-b131-ad481dc08903",
-    "amount in satoshis": 100
+    "amount in satoshi": 100
     }
   ]
 }  
@@ -307,7 +307,7 @@ HTTP 200
 {
   "statistics": {
     "transaction_number": 100,
-    "profit_in_satoshis": 100
+    "profit_in_satoshi": 100
     }
 }  
 ```

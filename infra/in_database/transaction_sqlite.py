@@ -1,6 +1,5 @@
 import sqlite3
 from dataclasses import dataclass
-from uuid import UUID
 
 from BitcoinWallet.core.constants import COMMISSION
 from BitcoinWallet.core.errors import BalanceError, DoesNotExistError, EqualityError
@@ -37,9 +36,12 @@ class TransactionInDatabase:
             cursor = connection.cursor()
             cursor.execute(delete_table_query)
 
-    def create(self, transaction: Transaction, _: User, __: User) -> int:
+    def create(self, transaction: Transaction, user_from: User, _: User) -> int:
         wallet_from = WalletInDatabase().get(transaction.wallet_from)
         wallet_to = WalletInDatabase().get(transaction.wallet_to)
+
+        if str(wallet_from.API_key) != str(user_from.API_key):
+            raise DoesNotExistError("wallet does not exists.")
 
         if wallet_from is None or wallet_to is None:
             raise DoesNotExistError("wallet does not exists.")
@@ -84,30 +86,3 @@ class TransactionInDatabase:
             else 0
         )
         return commission
-
-    def get_transactions(self, address: UUID) -> list[Transaction]:
-        transactions = []
-
-        with sqlite3.connect(self.db_path) as connection:
-            cursor = connection.cursor()
-            cursor.execute(
-                """
-                SELECT transaction_id,wallet_from, wallet_to, amount_in_satoshi
-                FROM wallet_transactions
-                WHERE wallet_from = ? OR wallet_to = ?;
-                """,
-                (str(address), str(address)),
-            )
-
-            results = cursor.fetchall()
-
-            for result in results:
-                transaction = Transaction(
-                    transaction_id=result[0],
-                    wallet_from=result[1],
-                    wallet_to=result[2],
-                    amount_in_satoshi=result[3],
-                )
-                transactions.append(transaction)
-
-        return transactions

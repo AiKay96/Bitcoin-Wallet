@@ -1,9 +1,9 @@
 import sqlite3
+from collections import defaultdict
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
 from uuid import UUID
 
-from BitcoinWallet.core.constants import MAXIMUM_NUMBER_OF_WALLETS
 from BitcoinWallet.core.errors import DoesNotExistError, ExistsError
 from BitcoinWallet.core.transactions import Transaction
 from BitcoinWallet.core.users import User
@@ -126,12 +126,12 @@ class UserInDatabase:
                 """
                 cursor.execute(wallet_query, (str(key), str(address)))
                 wallet_data = cursor.fetchone()
-
                 if wallet_data:
                     return Wallet(
-                        address=UUID(wallet_data[0]),
+                        address=UUID(wallet_data[2]),
                         balance=wallet_data[1],
                         API_key=key,
+                        transactions=self.get_wallet_transactions(UUID(wallet_data[2])),
                     )
                 else:
                     raise DoesNotExistError("User does not have this wallet")
@@ -142,39 +142,24 @@ class UserInDatabase:
         self.get(key)
 
         wallets = self.get_user_wallets(key)
-        answer: List[Transaction] = []
-
-        addresses: List[Optional[str]] = [None] * MAXIMUM_NUMBER_OF_WALLETS
-
-        for i, wallet in enumerate(wallets):
-            addresses[i] = str(wallet.address)
+        addresses = [str(wallet.address) for wallet in wallets]
 
         user_query = """
-            SELECT *
-            FROM wallet_transactions
-            WHERE
-                wallet_from = ?
-                OR wallet_from = ?
-                OR wallet_from = ?
-                OR wallet_to = ?
-                OR wallet_to = ?
-                OR wallet_to = ?
-        """
+                SELECT *
+                FROM wallet_transactions
+                WHERE
+                    wallet_from IN ({})
+                    OR wallet_to IN ({})
+            """.format(
+            ",".join(["?"] * len(addresses)), ",".join(["?"] * len(addresses))
+        )
 
         with sqlite3.connect(self.db_path) as connection:
             cursor = connection.cursor()
-            cursor.execute(
-                user_query,
-                (
-                    str(addresses[0]),
-                    str(addresses[1]),
-                    str(addresses[2]),
-                    str(addresses[0]),
-                    str(addresses[1]),
-                    str(addresses[2]),
-                ),
-            )
+            cursor.execute(user_query, addresses + addresses)
             data = cursor.fetchall()
+
+            transactions_dict = defaultdict(list)
             for result in data:
                 transaction = Transaction(
                     transaction_id=result[0],
@@ -182,10 +167,15 @@ class UserInDatabase:
                     wallet_to=result[2],
                     amount_in_satoshi=result[3],
                 )
-                if transaction not in answer:
-                    answer.append(transaction)
+                transactions_dict[
+                    (transaction.wallet_from, transaction.wallet_to)
+                ].append(transaction)
 
-        return answer
+            unique_transactions = []
+            for transaction_list in transactions_dict.values():
+                unique_transactions.append(transaction_list[0])
+
+            return unique_transactions
 
     def get_user_wallets(self, API_key: UUID) -> list[Wallet]:
         with sqlite3.connect(self.db_path) as connection:
@@ -202,7 +192,40 @@ class UserInDatabase:
 
         wallets = []
         for result in results:
-            wallet = Wallet(API_key=result[0], balance=result[1], address=result[2])
+            wallet = Wallet(
+                API_key=result[0],
+                balance=result[1],
+                address=result[2],
+                transactions=self.get_wallet_transactions(UUID(result[2])),
+            )
             wallets.append(wallet)
 
         return wallets
+
+    def get_wallet_transactions(self, address: UUID) -> list[Transaction]:
+        transactions = []
+
+        with sqlite3.connect(self.db_path) as connection:
+            cursor = connection.cursor()
+            cursor.execute(
+                """
+                SELECT *
+                FROM wallet_transactions
+                WHERE wallet_from = ? or wallet_to = ?
+                """,
+                (
+                    str(address),
+                    str(address),
+                ),
+            )
+
+            results = cursor.fetchall()
+            for result in results:
+                transaction = Transaction(
+                    transaction_id=result[0],
+                    wallet_from=result[1],
+                    wallet_to=result[2],
+                    amount_in_satoshi=result[3],
+                )
+                transactions.append(transaction)
+        return transactions
